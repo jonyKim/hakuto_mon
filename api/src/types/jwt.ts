@@ -3,5 +3,4 @@ export interface JwtPayload {
     userId: string;
     email: string;
     role: string;
-    wallet_address: string;
 } 

@@ -1,21 +1,19 @@
-export type UserRole = 'admin' | 'user';
+export type AdminUserRole = 'admin' | 'user';
 
-export interface User {
-    id: string;
-    wallet_address: string;
+export interface AdminUser {
+    id: number;
+    uuidAdmin: string;
     name: string;
-    email: string;
-    password_hash?: string;
-    role: UserRole;
-    is_active: boolean;
-    last_login_at?: Date;
-    login_attempts?: number;
-    locked_until?: Date;
-    created_at: Date;
-    updated_at: Date;
+    emailId: string;
+    adminPassword: string;
+    adminGrade: AdminUserRole;
+    lastloginIp?: string;
+    rememberToken?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export interface UserWithoutPassword extends Omit<User, 'password_hash'> {}
+export interface UserWithoutPassword extends Omit<AdminUser, 'adminPassword'> {}
 
 export interface LoginHistory {
     id: string;

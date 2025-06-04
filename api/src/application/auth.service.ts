@@ -24,7 +24,9 @@ export class AuthService {
     }
 
     async login(emailId: string, password: string, ip: string, userAgent: string): Promise<AuthResult> {
+        console.log('try to login', emailId, password, ip, userAgent);
         const user = await this.authRepository.findUserByEmail(emailId);
+        console.log('user', user);
         if (!user) throw new Error('존재하지 않는 계정입니다.');
         const isValid = await bcrypt.compare(password, user.adminPassword);
         if (!isValid) throw new Error('비밀번호가 일치하지 않습니다.');

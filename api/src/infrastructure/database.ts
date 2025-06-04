@@ -16,8 +16,6 @@ const {
     MYSQL_DATABASE
 } = process.env;
 
-console.log(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE);
-
 if (!MYSQL_HOST || !MYSQL_PORT || !MYSQL_USER || !MYSQL_PASSWORD || !MYSQL_DATABASE) {
     throw new Error('MySQL credentials are not properly configured');
 }

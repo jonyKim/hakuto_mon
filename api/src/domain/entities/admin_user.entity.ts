@@ -21,10 +21,10 @@ export class AdminUser {
     adminGrade!: string;
 
     @Column({ name: 'lastlogin_ip', nullable: true })
-    lastloginIp!: string | null;
+    lastloginIp?: string;
 
     @Column({ name: 'remember_token', nullable: true })
-    rememberToken!: string | null;
+    rememberToken?: string;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt!: Date;

@@ -8,7 +8,6 @@ import path from 'path';
 import { AuthService } from './application/auth.service';
 import { AuthController } from './interfaces/auth.controller';
 import { createAuthRouter } from './interfaces/auth.routes';
-import { JwtService } from './application/jwt.service';
 
 // LFIT 관련 라우터 임포트
 import { createMissionRewardsRouter } from './interfaces/mission.rewards.routes';

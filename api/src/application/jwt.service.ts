@@ -1,5 +1,5 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { User } from '../types/user';
+import { AdminUser } from '../types/user';
 import { JwtPayload } from '../types/jwt';
 
 export class JwtService {
@@ -11,13 +11,12 @@ export class JwtService {
         this.expiresIn = process.env.JWT_EXPIRES_IN || '1h';
     }
 
-    generateToken(user: User): string {
+    generateToken(user: AdminUser): string {
         const payload: JwtPayload = {
-            id: user.id,
-            userId: user.id,
-            email: user.email,
-            role: user.role,
-            wallet_address: user.wallet_address
+            id: user.id.toString(),
+            userId: user.id.toString(),
+            email: user.emailId,
+            role: user.adminGrade,
         };
 
         return jwt.sign(
