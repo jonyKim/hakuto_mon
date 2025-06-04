@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant Client
+    participant Router
+    participant AuthMiddleware
+    participant JwtService
+    participant AuthService
+    participant Database
+
+    Note over Client,Database: 로그인 요청
+
+    Client->>Router: POST /api/admin/auth/login
+    Router->>AuthMiddleware: 인증 미들웨어
+    AuthMiddleware->>AuthService: login(credentials)
+    AuthService->>Database: 사용자 조회
+    Database-->>AuthService: 사용자 데이터
+    AuthService->>JwtService: generateToken(user)
+    JwtService-->>AuthService: JWT 토큰
+    AuthService-->>Client: { token, user }
+
+    Note over Client,Database: 보호된 리소스 요청
+
+    Client->>Router: GET /api/admin/mission-rewards
+    Router->>AuthMiddleware: 인증 미들웨어
+    AuthMiddleware->>JwtService: verifyToken(token)
+    JwtService-->>AuthMiddleware: 토큰 검증 결과
+    AuthMiddleware->>Router: 인증 성공
+    Router->>Controller: 요청 처리
+    Controller-->>Client: 응답 데이터

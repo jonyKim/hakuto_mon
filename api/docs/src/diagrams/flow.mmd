@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant Client
+    participant Router
+    participant Controller
+    participant Service
+    participant Repository
+    participant Database
+
+    Note over Client,Database: 미션 보상 조회 요청
+
+    Client->>Router: GET /api/admin/mission-rewards
+    Router->>Controller: getAll()
+    Controller->>Service: getAllMissionRewards()
+    Service->>Repository: findAll()
+    Repository->>Database: SELECT * FROM mission_rewards
+    Database-->>Repository: mission_rewards 데이터
+    Repository-->>Service: MissionReward[]
+    Service-->>Controller: MissionReward[]
+    Controller-->>Client: JSON 응답
+
+    Note over Client,Database: 미션 클레임 상태 업데이트
+
+    Client->>Router: PUT /api/admin/mission-claims/:id
+    Router->>Controller: updateClaimStatus(id, dto)
+    Controller->>Service: updateClaimStatus(id, status)
+    Service->>Repository: updateStatus(id, status)
+    Repository->>Database: UPDATE mission_claims
+    Database-->>Repository: 업데이트된 데이터
+    Repository-->>Service: MissionClaim
+    Service-->>Controller: MissionClaim
+    Controller-->>Client: JSON 응답
+
+    Note over Client,Database: 광고 보상 생성
+
+    Client->>Router: POST /api/admin/ad-rewards
+    Router->>Controller: create(dto)
+    Controller->>Service: createAdReward(dto)
+    Service->>Repository: create(reward)
+    Repository->>Database: INSERT INTO ad_rewards
+    Database-->>Repository: 생성된 데이터
+    Repository-->>Service: AdReward
+    Service-->>Controller: AdReward
+    Controller-->>Client: JSON 응답

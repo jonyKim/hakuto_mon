@@ -1,0 +1,45 @@
+services:
+  api:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/lfit-admin-api:latest
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MOBILE_API_KEY=${MOBILE_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - lfit-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+networks:
+  lfit-network:
+    driver: bridge 

@@ -1,0 +1,53 @@
+graph TD
+    subgraph "인터페이스 계층 (interfaces/)"
+        RC[라우터/컨트롤러]
+        RC --> |미션 보상| MRC[미션 보상 컨트롤러]
+        RC --> |미션 클레임| MCC[미션 클레임 컨트롤러]
+        RC --> |광고 보상| ARC[광고 보상 컨트롤러]
+        RC --> |광고 클레임| ACC[광고 클레임 컨트롤러]
+    end
+
+    subgraph "애플리케이션 계층 (application/)"
+        MRS[미션 보상 서비스]
+        MCS[미션 클레임 서비스]
+        ARS[광고 보상 서비스]
+        ACS[광고 클레임 서비스]
+    end
+
+    subgraph "도메인 계층 (domain/)"
+        MRD[미션 보상 도메인]
+        MCD[미션 클레임 도메인]
+        ARD[광고 보상 도메인]
+        ACD[광고 클레임 도메인]
+    end
+
+    subgraph "인프라스트럭처 계층 (infrastructure/)"
+        MRR[미션 보상 리포지토리]
+        MCR[미션 클레임 리포지토리]
+        ARR[광고 보상 리포지토리]
+        ACR[광고 클레임 리포지토리]
+    end
+
+    subgraph "데이터베이스"
+        DB[(Supabase)]
+    end
+
+    RC --> MRS
+    RC --> MCS
+    RC --> ARS
+    RC --> ACS
+
+    MRS --> MRD
+    MCS --> MCD
+    ARS --> ARD
+    ACS --> ACD
+
+    MRD --> MRR
+    MCD --> MCR
+    ARD --> ARR
+    ACD --> ACR
+
+    MRR --> DB
+    MCR --> DB
+    ARR --> DB
+    ACR --> DB

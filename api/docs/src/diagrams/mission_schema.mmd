@@ -1,0 +1,17 @@
+erDiagram
+    missions {
+        uuid id PK
+        int steps
+        decimal reward
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+    mission_claims {
+        uuid id PK
+        uuid mission_id FK
+        uuid user_id FK
+        decimal reward_amount
+        int steps_completed
+        timestamp claimed_at
+    }

@@ -1,0 +1,16 @@
+erDiagram
+    ads {
+        uuid id PK
+        string title
+        decimal reward
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+    ad_claims {
+        uuid id PK
+        uuid ad_id FK
+        uuid user_id FK
+        decimal reward_amount
+        timestamp claimed_at
+    }
