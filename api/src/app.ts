@@ -11,7 +11,6 @@ import { createAuthRouter } from './interfaces/auth.routes';
 
 // Dashboard related imports
 import createDashboardRouter from './interfaces/dashboard.routes';
-import usersRouter from './interfaces/users.routes';
 import { createNFTStatsRouter } from './interfaces/nft.stats.routes';
 
 import { DashboardController } from './interfaces/dashboard.controller';

@@ -29,9 +29,21 @@ export const AppDataSource = new DataSource({
     database: MYSQL_DATABASE,
     synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
-    entities: ['src/domain/entities/**/*.ts'],
-    migrations: ['src/infrastructure/migrations/**/*.ts'],
-    subscribers: ['src/infrastructure/subscribers/**/*.ts'],
+    entities: [
+        process.env.NODE_ENV === 'production'
+            ? 'dist/domain/entities/**/*.js'
+            : 'src/domain/entities/**/*.ts'
+    ],
+    migrations: [
+        process.env.NODE_ENV === 'production'
+            ? 'dist/infrastructure/migrations/**/*.js'
+            : 'src/infrastructure/migrations/**/*.ts'
+    ],
+    subscribers: [
+        process.env.NODE_ENV === 'production'
+            ? 'dist/infrastructure/subscribers/**/*.js'
+            : 'src/infrastructure/subscribers/**/*.ts'
+    ],
 });
 
 // 데이터베이스 연결 테스트

@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 module.exports = {
   apps: [{
-    name: 'lfit-admin-api',
+    name: 'mon-admin-api',
     script: 'dist/app.js',
     instances: 1,
     exec_mode: 'cluster',
@@ -15,7 +15,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: process.env.PORT || 3001,
+      PORT: process.env.PORT || 3081,
       // 환경 변수 전달
       ...process.env
     },
