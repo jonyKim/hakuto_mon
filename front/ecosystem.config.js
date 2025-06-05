@@ -1,10 +1,10 @@
 module.exports = {
   apps: [
     {
-      name: 'lfit-admin-front',
+      name: 'hakuto-mon',
       script: 'npm',
       args: 'start',
-      cwd: '/home/ubuntu/tmp/lfit_admin/front',
+      cwd: '/home/ubuntu/project/hakuto-mon/front',
       env: {
         NODE_ENV: 'production',
         PORT: 3000,

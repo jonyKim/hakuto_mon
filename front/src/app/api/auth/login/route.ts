@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { 
         success: false, 
-        message: response.data.error?.message || "로그인에 실패했습니다." 
+        message: response.data.error?.message || "Failed to login" 
       },
       { status: 401 }
     )
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     // 기타 에러 처리
     console.error('로그인 중 오류:', error)
     return NextResponse.json(
-      { success: false, message: "로그인 중 오류가 발생했습니다." },
+      { success: false, message: "Failed to login" },
       { status: 500 }
     )
   }

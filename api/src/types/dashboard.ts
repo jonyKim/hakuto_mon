@@ -1,35 +1,34 @@
-import { AdRewardStats, AdRewardClaim } from './ad';
-import { MissionRewardStats, MissionRewardClaim } from './mission';
-
 export interface DashboardStats {
-    total_users: number;
-    total_users_change: number;
+    total_nfts: number;
+    total_nfts_change: number;
+    total_staked: number;
+    total_staked_change: number;
     total_rewards: number;
     total_rewards_change: number;
-    active_users: number;
-    active_users_change: number;
-    mission_stats: MissionRewardStats;
-    ad_stats: AdRewardStats;
+    staking_stats: StakingStats[];
+    today_withdrawn: number;
+}
+
+export interface StakingTrend {
+    date: string;
+    count: number;
+    total_staked: number;
 }
 
 export interface RewardTrend {
     date: string;
-    mission_rewards: number;
-    ad_rewards: number;
-    total_rewards: number;
+    count: number;
+    total_reward: number;
 }
 
-export interface UserActivityTrend {
-    date: string;
-    mission_participants: number;
-    ad_viewers: number;
-    active_users: number;
+export interface StakingStats {
+    nft_type: string;
+    count: number;
+    total_staked: number;
 }
 
 export interface DashboardOverview {
     stats: DashboardStats;
+    staking_trends: StakingTrend[];
     reward_trends: RewardTrend[];
-    user_activity_trends: UserActivityTrend[];
-    recent_mission_claims: MissionRewardClaim[];
-    recent_ad_claims: AdRewardClaim[];
-} 
+}

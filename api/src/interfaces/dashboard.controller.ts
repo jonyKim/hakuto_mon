@@ -17,6 +17,7 @@ export class DashboardController {
             const endDate = req.query.end_date ? new Date(req.query.end_date as string) : new Date();
 
             const overview = await this.dashboardService.getDashboardOverview(startDate, endDate);
+            console.log('overview', overview);
             res.json(overview);
         } catch (error) {
             console.error('Error getting dashboard overview:', error);

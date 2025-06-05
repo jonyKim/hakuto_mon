@@ -1,351 +1,205 @@
-import { supabase } from './supabase';
-import { RewardTrend, UserActivityTrend } from '../types/dashboard';
-import { AdRewardStats } from '../types/ad';
-import { MissionRewardStats } from '../types/mission';
+import { createPool } from 'mysql2/promise';
+import { StakingTrend, RewardTrend, StakingStats } from '../types/dashboard';
 
 export class DashboardRepository {
-    async getTotalUsers(startDate: Date, endDate: Date): Promise<{ count: number; change_percentage: number }> {
-        const [currentCount, previousCount] = await Promise.all([
-            this.getUserCount(startDate, endDate),
-            this.getUserCount(
-                new Date(startDate.getTime() - (endDate.getTime() - startDate.getTime())),
-                startDate
-            )
-        ]);
+    private pool;
 
+    constructor() {
+        this.pool = createPool({
+            host: process.env.MYSQL_HOST,
+            user: process.env.MYSQL_USER,
+            password: process.env.MYSQL_PASSWORD,
+            database: 'THEMOON_DEFI_SERVICE',
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0
+        });
+    }
+
+    async getTotalNFTs(_startDate?: Date, _endDate?: Date): Promise<{ total_nfts: number; change_percentage: number }> {
+        let query = `
+            SELECT
+                SUM(CASE WHEN contract_address = '0x146A5e6fd1ca56Bc6b4BB54Bf7A577CB71517da6' THEN 1 ELSE 0 END) as pusa,
+                SUM(CASE WHEN contract_address = '0x687F077249c6010BcAdD06E212BfE35bA42a8C41' THEN 1 ELSE 0 END) as hakuto_half,
+                SUM(CASE WHEN contract_address = '0xbc557F677fC5b75D7aFdCb7E4F82c1b4843072B1' THEN 1 ELSE 0 END) as hakuto
+            FROM tb_user_nft_asset
+            WHERE is_own = 1
+                AND contract_address IN (
+                '0x146A5e6fd1ca56Bc6b4BB54Bf7A577CB71517da6',
+                '0x687F077249c6010BcAdD06E212BfE35bA42a8C41',
+                '0xbc557F677fC5b75D7aFdCb7E4F82c1b4843072B1'
+                )
+        `;
+        const params: any[] = [];
+        // if (startDate && endDate) {
+        //     query += ` AND datastamp BETWEEN ? AND ?`;
+        //     params.push(startDate, endDate);
+        // }
+        const [rows] = await this.pool.query(query, params);
+        const result = (rows as any)[0];
+        const pusa = Number(result.pusa) || 0;
+        const hakuto_half = Number(result.hakuto_half) || 0;
+        const hakuto = Number(result.hakuto) || 0;
+        const total_nfts = pusa + hakuto_half + hakuto;
+        // change_percentage는 기간별 변동률이 필요할 때만 계산, 여기선 0으로 반환
         return {
-            count: currentCount,
-            change_percentage: this.calculateChangePercentage(currentCount, previousCount)
+            total_nfts,
+            change_percentage: 0
+        };
+    }
+
+    async getTotalStaked(_startDate?: Date, _endDate?: Date): Promise<{ amount: number; change_percentage: number }> {
+        let query = `
+            SELECT COUNT(*) as amount
+            FROM tb_user_nft_stake
+            WHERE stake_stat = '01'`;
+        const params: any[] = [];
+        // if (startDate && endDate) {
+        //     query += ` AND stake_date BETWEEN ? AND ?`;
+        //     params.push(startDate, endDate);
+        // }
+        const [rows] = await this.pool.query(query, params);
+        const result = (rows as any)[0];
+        return {
+            amount: Number(result.amount) || 0,
+            change_percentage: 0
         };
     }
 
     async getTotalRewards(startDate: Date, endDate: Date): Promise<{ amount: number; change_percentage: number }> {
-        const [currentAmount, previousAmount] = await Promise.all([
-            this.getTotalRewardAmount(startDate, endDate),
-            this.getTotalRewardAmount(
-                new Date(startDate.getTime() - (endDate.getTime() - startDate.getTime())),
-                startDate
-            )
-        ]);
+        const [rows] = await this.pool.query(`
+            SELECT 
+                SUM(get_rewards) as amount,
+                (SUM(get_rewards) - LAG(SUM(get_rewards)) OVER (ORDER BY DATE(reward_date))) / LAG(SUM(get_rewards)) OVER (ORDER BY DATE(reward_date)) * 100 as change_percentage
+            FROM tb_user_nft_reward
+            WHERE reward_date BETWEEN ? AND ?
+        `, [startDate, endDate]);
 
+        const result = rows as any[];
         return {
-            amount: currentAmount,
-            change_percentage: this.calculateChangePercentage(currentAmount, previousAmount)
+            amount: Number(result[0].amount) || 0,
+            change_percentage: Number(result[0].change_percentage) || 0
         };
     }
 
-    async getActiveUsers(startDate: Date, endDate: Date): Promise<{ count: number; change_percentage: number }> {
-        const [currentCount, previousCount] = await Promise.all([
-            this.getActiveUserCount(startDate, endDate),
-            this.getActiveUserCount(
-                new Date(startDate.getTime() - (endDate.getTime() - startDate.getTime())),
-                startDate
-            )
-        ]);
+    async getStakingStats(startDate: Date, endDate: Date): Promise<StakingStats[]> {
+        const [rows] = await this.pool.query(`
+            SELECT 
+                CASE 
+                    WHEN contract_address LIKE '%pusa%' THEN 'PUSA'
+                    WHEN contract_address LIKE '%hakuto%' THEN 'HAKUTO'
+                    WHEN contract_address LIKE '%lgdt%' THEN 'LGDT'
+                    WHEN contract_address LIKE '%cmx%' THEN 'CMX'
+                END as nft_type,
+                COUNT(*) as count,
+                COUNT(*) as total_staked
+            FROM tb_user_nft_stake
+            WHERE stake_stat = '01'
+            AND stake_date BETWEEN ? AND ?
+            GROUP BY nft_type
+        `, [startDate, endDate]);
 
-        return {
-            count: currentCount,
-            change_percentage: this.calculateChangePercentage(currentCount, previousCount)
-        };
+        return rows as StakingStats[];
     }
 
-    async getMissionStats(startDate: Date, endDate: Date): Promise<MissionRewardStats> {
-        const { data, error } = await supabase
-            .from('mission_reward_claims')
-            .select('claim_status, reward_amount')
-            .gte('claimed_at', startDate.toISOString())
-            .lte('claimed_at', endDate.toISOString());
+    async getStakingTrends(startDate: Date, endDate: Date): Promise<StakingTrend[]> {
+        const [rows] = await this.pool.query(`
+            SELECT 
+                DATE(stake_date) as date,
+                COUNT(*) as count,
+                COUNT(*) as total_staked
+            FROM tb_user_nft_stake
+            WHERE stake_stat = '01'
+            AND stake_date BETWEEN ? AND ?
+            GROUP BY DATE(stake_date)
+            ORDER BY date
+        `, [startDate, endDate]);
 
-        if (error) throw error;
-
-        return {
-            total_claims: data.length,
-            total_rewards: data.reduce((sum, claim) => sum + (claim.reward_amount || 0), 0),
-            completed_claims: data.filter(claim => claim.claim_status === 'COMPLETED').length,
-            failed_claims: data.filter(claim => claim.claim_status === 'FAILED').length
-        };
-    }
-
-    async getAdStats(startDate: Date, endDate: Date): Promise<AdRewardStats> {
-        const { data, error } = await supabase
-            .from('ad_reward_claims')
-            .select('user_id, claim_status, reward_amount')
-            .gte('claimed_at', startDate.toISOString())
-            .lte('claimed_at', endDate.toISOString());
-
-        if (error) throw error;
-
-        const uniqueUsers = new Set(data.map(claim => claim.user_id)).size;
-        const totalRewards = data.reduce((sum, claim) => sum + (claim.reward_amount || 0), 0);
-
-        return {
-            total_views: data.length,
-            unique_users: uniqueUsers,
-            total_rewards: totalRewards,
-            avg_reward: data.length > 0 ? totalRewards / data.length : 0,
-            completed_claims: data.filter(claim => claim.claim_status === 'COMPLETED').length,
-            failed_claims: data.filter(claim => claim.claim_status === 'FAILED').length
-        };
+        return rows as StakingTrend[];
     }
 
     async getRewardTrends(startDate: Date, endDate: Date): Promise<RewardTrend[]> {
-        const [missionClaims, adClaims] = await Promise.all([
-            this.getDailyMissionRewards(startDate, endDate),
-            this.getDailyAdRewards(startDate, endDate)
-        ]);
+        const [rows] = await this.pool.query(`
+            SELECT 
+                DATE(reward_date) as date,
+                COUNT(*) as count,
+                SUM(get_rewards) as total_reward
+            FROM tb_user_nft_reward
+            WHERE reward_date BETWEEN ? AND ?
+            GROUP BY DATE(reward_date)
+            ORDER BY date
+        `, [startDate, endDate]);
 
-        const trends: RewardTrend[] = [];
-        let currentDate = new Date(startDate);
-
-        while (currentDate <= endDate) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            const missionRewards = missionClaims[dateStr] || 0;
-            const adRewards = adClaims[dateStr] || 0;
-
-            trends.push({
-                date: dateStr,
-                mission_rewards: missionRewards,
-                ad_rewards: adRewards,
-                total_rewards: missionRewards + adRewards
-            });
-
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        return trends;
+        return rows as RewardTrend[];
     }
 
-    async getUserActivityTrends(startDate: Date, endDate: Date): Promise<UserActivityTrend[]> {
-        const [missionUsers, adUsers, activeUsers] = await Promise.all([
-            this.getDailyMissionUsers(startDate, endDate),
-            this.getDailyAdUsers(startDate, endDate),
-            this.getDailyActiveUsers(startDate, endDate)
-        ]);
-
-        const trends: UserActivityTrend[] = [];
-        let currentDate = new Date(startDate);
-
-        while (currentDate <= endDate) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            
-            trends.push({
-                date: dateStr,
-                mission_participants: missionUsers[dateStr] || 0,
-                ad_viewers: adUsers[dateStr] || 0,
-                active_users: activeUsers[dateStr] || 0
-            });
-
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        return trends;
+    async getTotalStakedAmountAllTime(): Promise<number> {
+        const [rows] = await this.pool.query(`
+            SELECT COUNT(*) as total
+            FROM tb_user_nft_stake
+            WHERE stake_stat = '01'
+        `);
+        return (rows as any)[0].total;
     }
 
-    private async getUserCount(startDate: Date, endDate: Date): Promise<number> {
-        const { count, error } = await supabase
-            .from('users')
-            .select('id', { count: 'exact' })
-            .gte('created_at', startDate.toISOString())
-            .lt('created_at', endDate.toISOString());
-
-        if (error) throw error;
-        return count || 0;
+    async getStakedAmountByAddress(): Promise<{ wallet_address: string; total_staked: number }[]> {
+        const [rows] = await this.pool.query(`
+            SELECT 
+                own_waletaddress as wallet_address,
+                COUNT(*) as total_staked
+            FROM tb_user_nft_stake
+            WHERE stake_stat = '01'
+            GROUP BY own_waletaddress
+            ORDER BY total_staked DESC
+        `);
+        return rows as { wallet_address: string; total_staked: number }[];
     }
 
-    private async getTotalRewardAmount(startDate: Date, endDate: Date): Promise<number> {
-        const [missionRewards, adRewards] = await Promise.all([
-            this.getMissionRewardAmount(startDate, endDate),
-            this.getAdRewardAmount(startDate, endDate)
-        ]);
-
-        return missionRewards + adRewards;
-    }
-
-    private async getMissionRewardAmount(startDate: Date, endDate: Date): Promise<number> {
-        const { data, error } = await supabase
-            .from('mission_reward_claims')
-            .select('reward_amount')
-            .eq('claim_status', 'COMPLETED')
-            .gte('claimed_at', startDate.toISOString())
-            .lt('claimed_at', endDate.toISOString());
-
-        if (error) throw error;
-        return data.reduce((sum, claim) => sum + (claim.reward_amount || 0), 0);
-    }
-
-    private async getAdRewardAmount(startDate: Date, endDate: Date): Promise<number> {
-        const { data, error } = await supabase
-            .from('ad_reward_claims')
-            .select('reward_amount')
-            .eq('claim_status', 'COMPLETED')
-            .gte('claimed_at', startDate.toISOString())
-            .lt('claimed_at', endDate.toISOString());
-
-        if (error) throw error;
-        return data.reduce((sum, claim) => sum + (claim.reward_amount || 0), 0);
-    }
-
-    private async getActiveUserCount(startDate: Date, endDate: Date): Promise<number> {
-        const { data, error } = await supabase
-            .from('users')
-            .select('id')
-            .eq('is_active', true)
-            .gte('last_login_at', startDate.toISOString())
-            .lt('last_login_at', endDate.toISOString());
-
-        if (error) throw error;
-        return data.length;
-    }
-
-    private calculateChangePercentage(current: number, previous: number): number {
-        if (previous === 0) return 0;
-        return ((current - previous) / previous) * 100;
-    }
-
-    private async getDailyMissionRewards(startDate: Date, endDate: Date): Promise<Record<string, number>> {
-        const { data, error } = await supabase
-            .from('mission_reward_claims')
-            .select('claimed_at, reward_amount')
-            .eq('claim_status', 'COMPLETED')
-            .gte('claimed_at', startDate.toISOString())
-            .lt('claimed_at', endDate.toISOString());
-
-        if (error) throw error;
-
-        return this.aggregateByDate(data, 'claimed_at', 'reward_amount');
-    }
-
-    private async getDailyAdRewards(startDate: Date, endDate: Date): Promise<Record<string, number>> {
-        const { data, error } = await supabase
-            .from('ad_reward_claims')
-            .select('claimed_at, reward_amount')
-            .eq('claim_status', 'COMPLETED')
-            .gte('claimed_at', startDate.toISOString())
-            .lt('claimed_at', endDate.toISOString());
-
-        if (error) throw error;
-
-        return this.aggregateByDate(data, 'claimed_at', 'reward_amount');
-    }
-
-    private async getDailyMissionUsers(startDate: Date, endDate: Date): Promise<Record<string, number>> {
-        const { data, error } = await supabase
-            .from('mission_reward_claims')
-            .select('claimed_at, user_id')
-            .gte('claimed_at', startDate.toISOString())
-            .lt('claimed_at', endDate.toISOString());
-
-        if (error) throw error;
-
-        return this.aggregateUniqueUsersByDate(data, 'claimed_at', 'user_id');
-    }
-
-    private async getDailyAdUsers(startDate: Date, endDate: Date): Promise<Record<string, number>> {
-        const { data, error } = await supabase
-            .from('ad_reward_claims')
-            .select('claimed_at, user_id')
-            .gte('claimed_at', startDate.toISOString())
-            .lt('claimed_at', endDate.toISOString());
-
-        if (error) throw error;
-
-        return this.aggregateUniqueUsersByDate(data, 'claimed_at', 'user_id');
-    }
-
-    private async getDailyActiveUsers(startDate: Date, endDate: Date): Promise<Record<string, number>> {
-        const { data, error } = await supabase
-            .from('users')
-            .select('last_login_at')
-            .eq('is_active', true)
-            .gte('last_login_at', startDate.toISOString())
-            .lt('last_login_at', endDate.toISOString());
-
-        if (error) throw error;
-
-        return this.aggregateByDate(data, 'last_login_at', null);
-    }
-
-    private aggregateByDate(data: any[], dateField: string, valueField: string | null): Record<string, number> {
-        const result: Record<string, number> = {};
-
-        data.forEach(item => {
-            const date = new Date(item[dateField]).toISOString().split('T')[0];
-            if (!result[date]) {
-                result[date] = valueField ? (item[valueField] || 0) : 1;
-            } else {
-                result[date] += valueField ? (item[valueField] || 0) : 1;
-            }
-        });
-
-        return result;
-    }
-
-    private aggregateUniqueUsersByDate(data: any[], dateField: string, userField: string): Record<string, number> {
-        const result: Record<string, number> = {};
-
-        data.forEach(item => {
-            const date = new Date(item[dateField]).toISOString().split('T')[0];
-            if (!result[date]) {
-                result[date] = new Set([item[userField]]).size;
-            } else {
-                const uniqueUsers = new Set([...new Set([item[userField]])]);
-                result[date] = uniqueUsers.size;
-            }
-        });
-
-        return result;
-    }
-
-    // 전체 기간 총 리워드 보상 LFIT 수
-    async getTotalRewardAmountAllTime(): Promise<number> {
-        const { data, error } = await supabase
-            .from('mission_reward_claims')
-            .select('reward_amount')
-            .eq('claim_status', 'COMPLETED');
-        if (error) throw error;
-        return data.reduce((sum, claim) => sum + (claim.reward_amount || 0), 0);
-    }
-
-    // 주소별 지급 보상 LFIT 수
-    async getRewardAmountByAddress(): Promise<{ wallet_address: string, total_reward: number }[]> {
-        const { data, error } = await supabase
-            .from('mission_reward_claims')
-            .select('wallet_address, reward_amount')
-            .eq('claim_status', 'COMPLETED');
-        if (error) throw error;
-        const result: Record<string, number> = {};
-        data.forEach(claim => {
-            if (!claim.wallet_address) return;
-            result[claim.wallet_address] = (result[claim.wallet_address] || 0) + (claim.reward_amount || 0);
-        });
-        return Object.entries(result).map(([wallet_address, total_reward]) => ({ wallet_address, total_reward }));
-    }
-
-    // 실패 상태의 트랜잭션 레코드 수
     async getFailedTransactionCount(): Promise<number> {
-        const { count, error } = await supabase
-            .from('mission_reward_claims')
-            .select('id', { count: 'exact' })
-            .eq('claim_status', 'FAILED');
-        if (error) throw error;
-        return count || 0;
+        const [rows] = await this.pool.query(`
+            SELECT COUNT(*) as total
+            FROM (
+                SELECT * FROM tb_user_nft_hakuto_transaction WHERE status = 'N'
+                UNION ALL
+                SELECT * FROM tb_user_nft_lgdt_transaction WHERE status = 'N'
+                UNION ALL
+                SELECT * FROM tb_user_nft_pusa_transaction WHERE status = 'N'
+                UNION ALL
+                SELECT * FROM tb_user_nft_cmx_transaction WHERE status = 'N'
+            ) as failed_tx
+        `);
+        return (rows as any)[0].total;
     }
 
-    // 날짜별 트랜잭션 수 및 보상량 수
-    async getDailyTransactionStats(startDate: Date, endDate: Date): Promise<{ date: string, count: number, total_reward: number }[]> {
-        const { data, error } = await supabase
-            .from('mission_reward_claims')
-            .select('claimed_at, reward_amount')
-            .gte('claimed_at', startDate.toISOString())
-            .lt('claimed_at', endDate.toISOString());
-        if (error) throw error;
-        const stats: Record<string, { count: number, total_reward: number }> = {};
-        data.forEach(claim => {
-            const date = new Date(claim.claimed_at).toISOString().split('T')[0];
-            if (!stats[date]) stats[date] = { count: 0, total_reward: 0 };
-            stats[date].count += 1;
-            stats[date].total_reward += claim.reward_amount || 0;
-        });
-        return Object.entries(stats).map(([date, { count, total_reward }]) => ({ date, count, total_reward }));
+    async getDailyStakingStats(startDate: Date, endDate: Date): Promise<{ date: string; count: number; total_staked: number }[]> {
+        const [rows] = await this.pool.query(`
+            SELECT 
+                DATE(stake_date) as date,
+                COUNT(*) as count,
+                COUNT(*) as total_staked
+            FROM tb_user_nft_stake
+            WHERE stake_stat = '01'
+            AND stake_date BETWEEN ? AND ?
+            GROUP BY DATE(stake_date)
+            ORDER BY date
+        `, [startDate, endDate]);
+
+        return rows as { date: string; count: number; total_staked: number }[];
+    }
+
+    async getTodayWithdrawn(): Promise<number> {
+        const [rows] = await this.pool.query(
+            `SELECT SUM(use_rewards) as today_withdrawn
+             FROM tb_user_nft_withdraw
+             WHERE DATE(crate_data) = CURDATE()`
+        );
+        return Number((rows as any)[0].today_withdrawn) || 0;
+    }
+
+    async getTotalWithdrawn(): Promise<number> {
+        const [rows] = await this.pool.query(
+          `SELECT SUM(use_rewards) as total_withdrawn FROM tb_user_nft_withdraw`
+        );
+        return Number((rows as any)[0].total_withdrawn) || 0;
     }
 } 

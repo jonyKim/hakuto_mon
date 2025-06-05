@@ -6,8 +6,8 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "LFIT HEALTH ADMIN",
-  description: "LFIT HEALTH 관리자 시스템",
+  title: "HAKUTO MONITOR ADMIN",
+  description: "HAKUTO MONITOR ADMIN SYSTEM",
 }
 
 export default function RootLayout({

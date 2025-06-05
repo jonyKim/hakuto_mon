@@ -1,9 +1,9 @@
 {
-  "name": "lfit-health-admin",
+  "name": "hakuto-mon-admin",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "PORT=3080 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

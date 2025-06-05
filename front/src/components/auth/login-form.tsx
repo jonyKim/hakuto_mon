@@ -56,7 +56,7 @@ export function LoginForm() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <h2 className="text-xl font-semibold">로그인</h2>
+        <h2 className="text-xl font-semibold">LOGIN</h2>
       </CardHeader>
       <CardContent>
         {error && (
@@ -67,7 +67,7 @@ export function LoginForm() {
             <Input
               type="email"
               name="email"
-              placeholder="이메일"
+              placeholder="EMAIL"
               required
               disabled={isLoading}
             />
@@ -76,7 +76,7 @@ export function LoginForm() {
             <Input
               type="password"
               name="password"
-              placeholder="비밀번호"
+              placeholder="PASSWORD"
               required
               disabled={isLoading}
             />
@@ -86,7 +86,7 @@ export function LoginForm() {
             className="w-full"
             disabled={isLoading}
           >
-            {isLoading ? "로그인 중..." : "로그인"}
+            {isLoading ? "LOGINING..." : "LOGIN"}
           </Button>
         </form>
       </CardContent>

@@ -1,92 +1,81 @@
 import { DashboardRepository } from '../infrastructure/dashboard.repository';
-import { DashboardOverview, DashboardStats, RewardTrend, UserActivityTrend } from '../types/dashboard';
-import { AdRewardRepository } from '../infrastructure/ad.rewards.repository';
-import { MissionRewardRepository } from '../infrastructure/mission.rewards.repository';
-import { MissionRewardStats } from 'mission';
+import { DashboardOverview, DashboardStats, StakingTrend, RewardTrend } from '../types/dashboard';
 
 export class DashboardService {
     constructor(
-        private readonly dashboardRepository: DashboardRepository,
-        private readonly adRewardRepository: AdRewardRepository,
-        private readonly missionRewardRepository: MissionRewardRepository
+        private readonly dashboardRepository: DashboardRepository
     ) {}
 
     async getDashboardOverview(startDate: Date, endDate: Date): Promise<DashboardOverview> {
         const [
             stats,
-            rewardTrends,
-            userActivityTrends,
-            recentMissionClaims,
-            recentAdClaims
+            stakingTrends,
+            rewardTrends
         ] = await Promise.all([
             this.getDashboardStats(startDate, endDate),
-            this.dashboardRepository.getRewardTrends(startDate, endDate),
-            this.dashboardRepository.getUserActivityTrends(startDate, endDate),
-            this.missionRewardRepository.getRecentClaims(10),
-            this.adRewardRepository.getRecentClaims(10)
+            this.dashboardRepository.getStakingTrends(startDate, endDate),
+            this.dashboardRepository.getRewardTrends(startDate, endDate)
         ]);
 
         return {
             stats,
-            reward_trends: rewardTrends,
-            user_activity_trends: userActivityTrends,
-            recent_mission_claims: recentMissionClaims,
-            recent_ad_claims: recentAdClaims
+            staking_trends: stakingTrends,
+            reward_trends: rewardTrends
         };
     }
 
     async getDashboardStats(startDate: Date, endDate: Date): Promise<DashboardStats> {
         const [
-            totalUsers,
+            totalNFTs,
+            totalStaked,
             totalRewards,
-            activeUsers,
-            missionStats,
-            adStats
+            stakingStats,
+            todayWithdrawn
         ] = await Promise.all([
-            this.dashboardRepository.getTotalUsers(startDate, endDate),
+            this.dashboardRepository.getTotalNFTs(startDate, endDate),
+            this.dashboardRepository.getTotalStaked(startDate, endDate),
             this.dashboardRepository.getTotalRewards(startDate, endDate),
-            this.dashboardRepository.getActiveUsers(startDate, endDate),
-            this.dashboardRepository.getMissionStats(startDate, endDate),
-            this.dashboardRepository.getAdStats(startDate, endDate)
+            this.dashboardRepository.getStakingStats(startDate, endDate),
+            this.dashboardRepository.getTodayWithdrawn()
         ]);
 
         return {
-            total_users: totalUsers.count,
-            total_users_change: totalUsers.change_percentage,
+            total_nfts: totalNFTs.total_nfts,
+            total_nfts_change: totalNFTs.change_percentage,
+            total_staked: totalStaked.amount,
+            total_staked_change: totalStaked.change_percentage,
             total_rewards: totalRewards.amount,
             total_rewards_change: totalRewards.change_percentage,
-            active_users: activeUsers.count,
-            active_users_change: activeUsers.change_percentage,
-            mission_stats: missionStats,
-            ad_stats: adStats
+            staking_stats: stakingStats,
+            today_withdrawn: todayWithdrawn
         };
+    }
+
+    async getStakingTrends(startDate: Date, endDate: Date): Promise<StakingTrend[]> {
+        return this.dashboardRepository.getStakingTrends(startDate, endDate);
     }
 
     async getRewardTrends(startDate: Date, endDate: Date): Promise<RewardTrend[]> {
         return this.dashboardRepository.getRewardTrends(startDate, endDate);
     }
 
-    async getUserActivityTrends(startDate: Date, endDate: Date): Promise<UserActivityTrend[]> {
-        return this.dashboardRepository.getUserActivityTrends(startDate, endDate);
+    async getTotalStakedAmountAllTime(): Promise<number> {
+        return this.dashboardRepository.getTotalStakedAmountAllTime();
     }
 
-    async getTotalRewardAmountAllTime(): Promise<number> {
-        return this.dashboardRepository.getTotalRewardAmountAllTime();
-    }
-
-    async getRewardAmountByAddress(): Promise<{ wallet_address: string, total_reward: number }[]> {
-        return this.dashboardRepository.getRewardAmountByAddress();
+    async getStakedAmountByAddress(): Promise<{ wallet_address: string, total_staked: number }[]> {
+        return this.dashboardRepository.getStakedAmountByAddress();
     }
 
     async getFailedTransactionCount(): Promise<number> {
         return this.dashboardRepository.getFailedTransactionCount();
     }
 
-    async getDailyTransactionStats(startDate: Date, endDate: Date): Promise<{ date: string, count: number, total_reward: number }[]> {
-        return this.dashboardRepository.getDailyTransactionStats(startDate, endDate);
+    async getDailyStakingStats(startDate: Date, endDate: Date): Promise<{ date: string, count: number, total_staked: number }[]> {
+        return this.dashboardRepository.getDailyStakingStats(startDate, endDate);
     }
 
-    async getMissionStatsByDate(startDate: Date, endDate: Date): Promise<MissionRewardStats> {
-        return this.dashboardRepository.getMissionStats(startDate, endDate);
+    async getStakingStatsByDate(startDate: Date, endDate: Date): Promise<{ nft_type: string, count: number, total_staked: number }[]> {
+        return this.dashboardRepository.getStakingStats(startDate, endDate);
     }
 } 

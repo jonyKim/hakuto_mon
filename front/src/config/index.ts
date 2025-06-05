@@ -1,6 +1,6 @@
 // API 설정
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
-export const API_SERVER_URL = process.env.NEXT_PUBLIC_API_SERVER_URL || 'http://localhost:3001';
+export const API_SERVER_URL = process.env.NEXT_PUBLIC_API_SERVER_BASE_URL || 'http://localhost:3001';
 
 // 환경 설정
 export const NODE_ENV = process.env.NEXT_PUBLIC_NODE_ENV || 'development';

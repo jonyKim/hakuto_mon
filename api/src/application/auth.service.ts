@@ -11,6 +11,7 @@ export interface AuthResult {
         name: string;
         emailId: string;
         adminGrade: string;
+        role: string;
     };
 }
 
@@ -40,6 +41,7 @@ export class AuthService {
                 name: user.name,
                 emailId: user.emailId,
                 adminGrade: user.adminGrade,
+                role: user.adminGrade,
             }
         };
     }
@@ -56,6 +58,7 @@ export class AuthService {
                 name: user.name,
                 emailId: user.emailId,
                 adminGrade: user.adminGrade,
+                role: user.adminGrade,
             }
         };
     }

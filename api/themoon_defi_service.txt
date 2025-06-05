@@ -1,0 +1,191 @@
+테이블 종류
+
+1. tb_admin_info : 디파이 시스템의 어드민 정보
+ CREATE TABLE `tb_admin_info` (
+  `admin_no` int(11) NOT NULL AUTO_INCREMENT,
+  `address` varchar(100) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `grade` varchar(100) NOT NULL DEFAULT '00',
+  `status` varchar(100) NOT NULL DEFAULT '00',
+  PRIMARY KEY (`admin_no`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_genera
+
+2. tb_user_access : 접속한 유저 정보
+ CREATE TABLE `tb_user_access` (
+  `waletaddress` varchar(100) NOT NULL,
+  `faccdate` datetime NOT NULL,
+  `raccdate` datetime DEFAULT NULL,
+  PRIMARY KEY (`waletaddress`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+3. tb_user_nft_asset : 유저의 nft 정보
+ CREATE TABLE `tb_user_nft_asset` (
+  `waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `token_id` varchar(100) NOT NULL,
+  `uri` varchar(300) DEFAULT NULL,
+  `is_own` varchar(2) NOT NULL,
+  `datastamp` datetime DEFAULT NULL,
+  PRIMARY KEY (`contract_address`,`token_id`),
+  KEY `tb_user_nft_asset_isOwn_idx` (`is_own`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+4. tb_user_nft_detail : 유저의 nft 상세 정보
+CREATE TABLE `tb_user_nft_asset_detail` (
+  `contract_address` varchar(100) NOT NULL,
+  `token_id` varchar(100) NOT NULL,
+  `ctg` varchar(30) DEFAULT NULL,
+  `img_url` varchar(300) DEFAULT NULL,
+  `asset_name` varchar(50) DEFAULT NULL,
+  `rewardLv` varchar(10) DEFAULT NULL,
+  `grade` varchar(30) DEFAULT NULL,
+  `datastamp` datetime DEFAULT NULL,
+  PRIMARY KEY (`contract_address`,`token_id`),
+  KEY `tb_user_nft_asset_detail_ctg_idx` (`ctg`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+5. tb_user_nft_cmx_transaction : cmx nft 트랜잭션
+CREATE TABLE `tb_user_nft_cmx_transaction` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `sub_num` varchar(100) NOT NULL,
+  `transHash` varchar(300) NOT NULL,
+  `event` varchar(80) DEFAULT NULL,
+  `status` varchar(2) DEFAULT NULL,
+  `chainId` varchar(10) DEFAULT NULL,
+  `trans_date` datetime NOT NULL,
+  `sendtransHash` varchar(300) DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`sub_num`,`transHash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+6. tb_user_nft_hakuto_transaction : 하쿠토 nft 트랜잭션
+CREATE TABLE `tb_user_nft_hakuto_transaction` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `token_id` varchar(100) NOT NULL,
+  `transHash` varchar(300) NOT NULL,
+  `event` varchar(80) DEFAULT NULL,
+  `status` varchar(2) DEFAULT NULL,
+  `chainId` varchar(10) DEFAULT NULL,
+  `trans_date` datetime NOT NULL,
+  `sendtransHash` varchar(300) DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`token_id`,`transHash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+7. tb_user_nft_lgdt_transaction : lgdt nft 트랜잭션
+CREATE TABLE `tb_user_nft_lgdt_transaction` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `token_id` varchar(100) NOT NULL,
+  `transHash` varchar(300) NOT NULL,
+  `sendtransHash` varchar(300) DEFAULT NULL,
+  `event` varchar(80) DEFAULT NULL,
+  `status` varchar(2) DEFAULT NULL,
+  `chainId` varchar(10) DEFAULT NULL,
+  `trans_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`token_id`,`transHash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+8. tb_user_nft_pusa_transaction : pusa nft 트랜잭션
+CREATE TABLE `tb_user_nft_pusa_transaction` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `token_id` varchar(100) NOT NULL,
+  `transHash` varchar(300) NOT NULL,
+  `event` varchar(80) DEFAULT NULL,
+  `status` varchar(2) DEFAULT NULL,
+  `chainId` varchar(10) DEFAULT NULL,
+  `trans_date` datetime NOT NULL,
+  `sendtransHash` varchar(300) DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`token_id`,`transHash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+9. tb_user_nft_reward : 보상 정보
+CREATE TABLE `tb_user_nft_reward` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `admin_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `token_id` varchar(100) NOT NULL,
+  `liquidity` bigint(20) DEFAULT NULL,
+  `get_rewards` decimal(65,4) DEFAULT NULL,
+  `rewards_days` int(11) DEFAULT 0,
+  `stake_cnt` decimal(65,4) DEFAULT NULL,
+  `reward_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`token_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+10. tb_user_token_stake : 스테이킹 정보
+CREATE TABLE `tb_user_nft_stake` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `admin_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `token_id` varchar(100) NOT NULL,
+  `stake_stat` varchar(4) DEFAULT NULL,
+  `chainId` varchar(10) DEFAULT NULL,
+  `transHash` varchar(300) DEFAULT NULL,
+  `sendtransHash` varchar(300) DEFAULT NULL,
+  `complete` varchar(2) DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
+  `stake_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`token_id`),
+  KEY `tb_user_nft_stake_stat_idx` (`stake_stat`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+11. tb_user_nft_withdraw : 유저 nft 출금 정보
+CREATE TABLE `tb_user_nft_withdraw` (
+  `waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `sub_no` bigint(20) NOT NULL,
+  `use_rewards` decimal(65,4) DEFAULT NULL,
+  `chainId` varchar(10) DEFAULT NULL,
+  `transHash` varchar(300) DEFAULT NULL,
+  `sendtransHash` varchar(300) DEFAULT NULL,
+  `crate_data` datetime DEFAULT NULL,
+  PRIMARY KEY (`contract_address`,`waletaddress`,`sub_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+12. tb_user_rewards : 유저 보상 상수 테이블 
+CREATE TABLE `tb_user_rewards` (
+  `id` int(11) NOT NULL,
+  `hkt_section` varchar(45) DEFAULT NULL,
+  `hkt_pub` varchar(45) DEFAULT NULL,
+  `hkt_re` varchar(45) DEFAULT NULL,
+  `pusa_grade` varchar(45) DEFAULT NULL,
+  `pusa_pub` varchar(45) DEFAULT NULL,
+  `pusa_re` varchar(45) DEFAULT NULL,
+  `cmx_pub` varchar(45) DEFAULT NULL,
+  `cmx_re` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+12. tb_user_token_reward : 유저에게 토큰 보상을 준 정보
+CREATE TABLE `tb_user_token_reward` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `admin_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `sub_num` bigint(20) NOT NULL,
+  `liquidity` decimal(65,4) DEFAULT NULL,
+  `get_rewards` decimal(65,4) DEFAULT NULL,
+  `rewards_days` int(11) DEFAULT 0,
+  `stake_cnt` decimal(65,4) DEFAULT NULL,
+  `reward_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`sub_num`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+13. tb_user_token_stake : 유저 토큰 스테이킹 정보
+CREATE TABLE `tb_user_token_stake` (
+  `own_waletaddress` varchar(100) NOT NULL,
+  `admin_waletaddress` varchar(100) NOT NULL,
+  `contract_address` varchar(100) NOT NULL,
+  `sub_num` bigint(20) NOT NULL,
+  `stake_stat` varchar(4) DEFAULT NULL,
+  `chainId` varchar(10) DEFAULT NULL,
+  `transHash` varchar(300) DEFAULT NULL,
+  `sendtransHash` varchar(300) DEFAULT NULL,
+  `complete` varchar(2) DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
+  `stake_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`own_waletaddress`,`contract_address`,`sub_num`),
+  KEY `tb_user_token_stake_stat_idx` (`stake_stat`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;

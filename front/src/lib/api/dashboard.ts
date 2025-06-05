@@ -36,4 +36,16 @@ export const dashboardApi = {
     });
     return data;
   },
+  getDashboardOverview: async () => {
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30); // Last 30 days
+    const endDate = new Date();
+    const { data } = await axiosInstance.get('/api/admin/dashboard', {
+      params: {
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString()
+      }
+    });
+    return data;
+  },
 };
