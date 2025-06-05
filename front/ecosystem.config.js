@@ -7,7 +7,7 @@ module.exports = {
       cwd: '/home/ubuntu/project/hakuto-mon/front',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 3080,
       },
       instances: 1,
       autorestart: true,
