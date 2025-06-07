@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import axios from 'axios'
-import { API_SERVER_URL } from '@/config'
+//import { API_SERVER_URL } from '@/config'
 
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json()
 
     // 백엔드 API 호출
-    const response = await axios.post(`${API_SERVER_URL}/api/admin/auth/login`, {
+    //const response = await axios.post(`${API_SERVER_URL}/api/admin/auth/login`, {
+    const response = await axios.post(`/api/admin/auth/login`, {
       email,
       password
     })

@@ -1,5 +1,4 @@
 import { SignJWT, jwtVerify } from 'jose'
-import Cookies from 'js-cookie'
 
 const JWT_SECRET = new TextEncoder().encode('your-super-secret-key-here')
 
@@ -38,16 +37,4 @@ export const verifyToken = async (token: string) => {
     console.error("[verifyToken] 토큰 검증 실패:", error)
     return null
   }
-}
-
-export const setAuthCookie = (token: string) => {
-  Cookies.set('auth-token', token, { expires: 1 })
-}
-
-export const removeAuthCookie = () => {
-  Cookies.remove('auth-token')
-}
-
-export const getAuthCookie = () => {
-  return Cookies.get('auth-token')
 }

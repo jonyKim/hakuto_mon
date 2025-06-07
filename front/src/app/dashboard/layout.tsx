@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
-import { getAuthCookie, removeAuthCookie } from "@/lib/auth"
+import { checkSession, logout } from "@/lib/api/sign"
 
 export default function DashboardLayout({
   children,
@@ -12,20 +12,44 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    console.log("대시보드 레이아웃 마운트")
-    const token = getAuthCookie()
-    if (!token) {
-      console.log("토큰이 없어서 로그인 페이지로 리다이렉트")
-      router.push('/login')
+    const verifySession = async () => {
+      try {
+        const response = await checkSession()
+        if (!response.success) {
+          router.push('/login')
+        }
+      } catch (error) {
+        console.error("세션 확인 중 오류:", error)
+        router.push('/login')
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    verifySession()
   }, [router])
 
-  const handleLogout = () => {
-    console.log("로그아웃 처리")
-    removeAuthCookie()
-    router.push('/login')
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/login')
+    } catch (error) {
+      console.error("로그아웃 중 오류:", error)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">페이지를 불러오는 중...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

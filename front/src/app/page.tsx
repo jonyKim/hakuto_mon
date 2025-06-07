@@ -1,20 +1,33 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAuthCookie } from '@/lib/auth'
+import { checkSession } from '@/lib/api/sign'
 
-export default function DashboardPage() {
+export default function RootPage() {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const token = getAuthCookie()
-    
-    if (!token) {
-      router.push('/login')
-    } else {
-      router.push('/dashboard')
+    const verifySession = async () => {
+      try {
+        console.log("세션 확인 시도");
+        console.log(isLoading);
+        const response = await checkSession()
+        if (response.success) {
+          router.push('/dashboard')
+        } else {
+          router.push('/login')
+        }
+      } catch (error) {
+        console.error("세션 확인 중 오류:", error)
+        router.push('/login')
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    verifySession()
   }, [router])
 
   return (
