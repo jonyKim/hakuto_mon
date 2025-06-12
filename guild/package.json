@@ -1,0 +1,20 @@
+{
+  "name": "guild",
+  "version": "1.0.0",
+  "description": "This project is responsible for integrating the Guild SDK to update the allowlist of NFT holders who are staking their NFTs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@guildxyz/sdk": "^2.6.9",
+    "@types/node": "^24.0.1",
+    "dotenv": "^16.5.0",
+    "ethers": "^6.14.3",
+    "mysql2": "^3.14.1",
+    "typeorm": "^0.3.24",
+    "typescript": "^5.8.3"
+  }
+}
