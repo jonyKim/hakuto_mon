@@ -5,10 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
-  BarChart3, 
   TrendingUp, 
   TrendingDown,
-  DollarSign,
   Users,
   Smartphone,
   Bell,
@@ -141,7 +139,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's what's happening with HAKUTO ecosystem.</p>
+          <p className="text-muted-foreground">Welcome back! Here&apos;s what&apos;s happening with HAKUTO ecosystem.</p>
         </div>
         <Badge variant="outline" className="flex items-center gap-1">
           <Activity className="h-3 w-3" />
@@ -196,7 +194,7 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ArrowUpDown className="h-4 w-4" />
-                  Today's Withdrawals
+                  Today&apos;s Withdrawals
                 </CardTitle>
               </CardHeader>
               <CardContent>
