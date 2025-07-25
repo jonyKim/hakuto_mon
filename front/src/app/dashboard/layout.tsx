@@ -2,8 +2,8 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Sidebar } from "@/components/layout/sidebar"
-import { Header } from "@/components/layout/header"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { AppHeader } from "@/components/layout/app-header"
 import { getAuthCookie, removeAuthCookie } from "@/lib/auth"
 
 export default function DashboardLayout({
@@ -29,11 +29,11 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar onLogout={handleLogout} />
+    <div className="flex min-h-screen bg-background">
+      <AppSidebar onLogout={handleLogout} />
       <div className="flex-1 flex flex-col">
-        <Header onLogout={handleLogout} />
-        <main className="flex-1 p-6 bg-gray-50">
+        <AppHeader onLogout={handleLogout} />
+        <main className="flex-1 p-6">
           {children}
         </main>
       </div>
