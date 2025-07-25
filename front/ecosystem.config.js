@@ -8,6 +8,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3080,
+        
       },
       instances: 1,
       autorestart: true,
