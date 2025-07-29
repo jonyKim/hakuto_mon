@@ -153,6 +153,9 @@ const notificationService = new NotificationService(
     walletUserRepository
 );
 
+// NotificationService는 추후 알림 기능 구현시 사용됩니다
+console.log('NotificationService initialized:', !!notificationService);
+
 // Admin routers
 app.use('/api/admin/auth', createAuthRouter(adminAuthController));
 app.use('/api/admin/dashboard', createDashboardRouter(dashboardController));

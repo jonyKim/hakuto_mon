@@ -19,6 +19,7 @@ export class EmailService {
 
     constructor(config: EmailConfig) {
         this.config = config;
+        // config는 실제 이메일 서비스 구현시 사용됩니다
     }
 
     /**
@@ -67,6 +68,7 @@ export class EmailService {
     private async sendEmailInternal(to: string, template: EmailTemplate): Promise<boolean> {
         // TODO: 실제 nodemailer 구현시 교체
         console.log('=== EMAIL MOCK SEND ===');
+        console.log(`From: ${this.config.host}:${this.config.port}`);
         console.log(`To: ${to}`);
         console.log(`Subject: ${template.subject}`);
         console.log(`HTML: ${template.html}`);

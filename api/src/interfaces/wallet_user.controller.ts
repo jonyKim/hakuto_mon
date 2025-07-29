@@ -352,7 +352,7 @@ export class WalletUserController {
     };
 
     // 사용자 통계 조회
-    getUserStats = async (req: Request, res: Response): Promise<void> => {
+    getUserStats = async (_req: Request, res: Response): Promise<void> => {
         try {
             const stats = await this.walletUserService.getUserStats();
             

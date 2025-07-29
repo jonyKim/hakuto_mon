@@ -3,8 +3,8 @@ import { WalletUser } from './wallet_user.entity';
 
 @Entity('email_verification_attempts')
 @Index(['email'])
-@Index(['verification_code'])
-@Index(['expires_at'])
+@Index(['verificationCode'])
+@Index(['expiresAt'])
 export class EmailVerificationAttempt {
     @PrimaryGeneratedColumn('uuid')
     id!: string;

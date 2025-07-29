@@ -182,7 +182,7 @@ export class FirebaseService {
             const response = await admin.messaging().sendEachForMulticast(message);
 
             // 각 토큰별 결과 매핑
-            const results: NotificationResult[] = response.responses.map((res, index) => {
+            const results: NotificationResult[] = response.responses.map((res) => {
                 if (res.success) {
                     return {
                         success: true,
