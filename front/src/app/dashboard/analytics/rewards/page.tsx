@@ -18,9 +18,9 @@ import { rewardStatsApi } from '@/lib/api/reward-stats'
 
 interface RewardStats {
   total_rewards: number
-  total_rewards_value: number
-  by_date: { date: string; total_rewards: number; total_value: number }[]
-  by_user: { recipient: string; total_rewards: number; total_value: number }[]
+  total_rewards_value?: number
+  by_date: { date: string; total_rewards: number; total_value?: number }[]
+  by_user: { own_waletaddress: string; total_rewards: number; total_value?: number }[]
   recent_rewards: any[]
 }
 
@@ -300,15 +300,15 @@ export default function RewardAnalyticsPage() {
             <CardContent>
               <div className="space-y-3">
                 {rewardStats.by_user?.slice(0, 10).map((user, index) => (
-                  <div key={user.recipient} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div key={user.own_waletaddress} className="flex items-center justify-between p-3 rounded-lg border">
                     <div className="flex items-center gap-3">
                       <Badge variant="outline">#{index + 1}</Badge>
                       <div>
                         <div className="text-sm font-medium">
-                          {user.recipient.slice(0, 6)}...{user.recipient.slice(-4)}
+                          {user.own_waletaddress.slice(0, 6)}...{user.own_waletaddress.slice(-4)}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          ${user.total_value?.toLocaleString() || 0} USD value
+                          {user.total_value ? `$${user.total_value.toLocaleString()} USD value` : 'Wallet Address'}
                         </div>
                       </div>
                     </div>
