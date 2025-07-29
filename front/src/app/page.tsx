@@ -2,19 +2,29 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAuthCookie } from '@/lib/auth'
+import { checkSession } from '@/lib/api/sign'
 
 export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const token = getAuthCookie()
-    
-    if (!token) {
-      router.push('/login')
-    } else {
-      router.push('/dashboard')
+    const verifySession = async () => {
+      try {
+        const response = await checkSession()
+        if (response.success) {
+          console.log("세션이 유효하므로 대시보드로 이동")
+          router.push('/dashboard')
+        } else {
+          console.log("세션이 유효하지 않으므로 로그인으로 이동")
+          router.push('/login')
+        }
+      } catch (error) {
+        console.error("세션 확인 실패:", error)
+        router.push('/login')
+      }
     }
+
+    verifySession()
   }, [router])
 
   return (

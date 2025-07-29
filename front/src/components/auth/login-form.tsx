@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { setAuthCookie } from "@/lib/auth"
+import { login } from "@/lib/api/sign"
 
 export function LoginForm() {
   const router = useRouter()
@@ -22,19 +22,10 @@ export function LoginForm() {
     const password = formData.get('password') as string
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
+      const data = await login(email, password)
+      
       if (data.success) {
         console.log("로그인 성공")
-        console.log("받은 토큰:", data.token)
-        setAuthCookie(data.token)
         console.log("대시보드로 이동 시도...")
         
         setTimeout(() => {
