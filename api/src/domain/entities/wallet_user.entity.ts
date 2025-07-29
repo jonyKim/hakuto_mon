@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
 @Entity('wallet_users')
-@Index(['wallet_address'])
+@Index(['walletAddress'])
 @Index(['email'])
-@Index(['verification_token'])
+@Index(['verificationToken'])
 export class WalletUser {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
