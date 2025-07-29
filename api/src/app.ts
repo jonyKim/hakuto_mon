@@ -37,6 +37,22 @@ import { WithdrawStatsController } from './interfaces/withdraw.stats.controller'
 import { WithdrawStatsService } from './application/withdraw.stats.service';
 import { WithdrawStatsRepository } from './infrastructure/withdraw.stats.repository';
 
+// Wallet User imports
+import walletUserRoutes from './interfaces/wallet_user.routes';
+
+// Email Verification imports
+import { createEmailVerificationRouter } from './interfaces/email_verification.routes';
+import { EmailVerificationController } from './interfaces/email_verification.controller';
+import { EmailVerificationService } from './application/email_verification.service';
+import { EmailService } from './application/email.service';
+import { EmailVerificationAttemptRepository } from './infrastructure/repositories/email_verification_attempt.repository';
+import { WalletUserRepository } from './infrastructure/repositories/wallet_user.repository';
+
+// Firebase and Notification imports
+import { FirebaseService } from './application/firebase.service';
+import { NotificationService } from './application/notification.service';
+import { NotificationLogRepository } from './infrastructure/repositories/notification_log.repository';
+
 dotenv.config();
 
 const app = express();
@@ -91,6 +107,52 @@ const withdrawStatsRepository = new WithdrawStatsRepository();
 const withdrawStatsService = new WithdrawStatsService(withdrawStatsRepository);
 const withdrawStatsController = new WithdrawStatsController(withdrawStatsService);
 
+// Email Verification dependencies
+const walletUserRepository = new WalletUserRepository();
+const emailVerificationAttemptRepository = new EmailVerificationAttemptRepository();
+const emailService = new EmailService({
+    host: process.env.EMAIL_SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_SMTP_PORT || '587'),
+    secure: process.env.EMAIL_SMTP_SECURE === 'true',
+    user: process.env.EMAIL_SMTP_USER || '',
+    password: process.env.EMAIL_SMTP_PASSWORD || '',
+    fromAddress: process.env.EMAIL_FROM_ADDRESS || 'noreply@hakuto.io',
+    fromName: process.env.EMAIL_FROM_NAME || 'HAKUTO MON'
+});
+const emailVerificationService = new EmailVerificationService(
+    emailService,
+    walletUserRepository,
+    emailVerificationAttemptRepository
+);
+const emailVerificationController = new EmailVerificationController(emailVerificationService);
+
+// Firebase and Notification dependencies
+const firebaseService = new FirebaseService({
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || ''
+});
+
+// Firebase 초기화 (환경 변수가 설정된 경우에만)
+if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+    try {
+        firebaseService.initialize();
+        console.log('Firebase service initialized successfully');
+    } catch (error) {
+        console.warn('Firebase initialization failed:', error);
+    }
+} else {
+    console.warn('Firebase credentials not provided. FCM notifications will not work.');
+}
+
+const notificationLogRepository = new NotificationLogRepository();
+const notificationService = new NotificationService(
+    firebaseService,
+    emailService,
+    notificationLogRepository,
+    walletUserRepository
+);
+
 // Admin routers
 app.use('/api/admin/auth', createAuthRouter(adminAuthController));
 app.use('/api/admin/dashboard', createDashboardRouter(dashboardController));
@@ -98,6 +160,10 @@ app.use('/api/admin/nft-stats', createNFTStatsRouter(nftStatsController));
 app.use('/api/admin/staking-stats', createStakingStatsRouter(stakingStatsController));
 app.use('/api/admin/reward-stats', createRewardStatsRouter(rewardStatsController));
 app.use('/api/admin/withdraw-stats', createWithdrawStatsRouter(withdrawStatsController));
+
+// Public API routes
+app.use('/api/wallet-users', walletUserRoutes);
+app.use('/api/email-verification', createEmailVerificationRouter(emailVerificationController));
 
 // Request logging middleware
 app.use((req, _res, next) => {

@@ -78,9 +78,40 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
+    title: "User Management",
+    icon: Users,
+    items: [
+      {
+        title: "Wallet Users",
+        href: "/dashboard/users/wallets",
+        icon: Users,
+      },
+      {
+        title: "Email Verification",
+        href: "/dashboard/users/verification",
+        icon: UserCheck,
+      },
+      {
+        title: "User Preferences",
+        href: "/dashboard/users/preferences", 
+        icon: Settings,
+      },
+      {
+        title: "User Activity Logs",
+        href: "/dashboard/users/activity",
+        icon: Activity,
+      },
+    ],
+  },
+  {
     title: "Notification Management",
     icon: Bell,
     items: [
+      {
+        title: "Price Alerts",
+        href: "/dashboard/notifications/price-alerts",
+        icon: TrendingUp,
+      },
       {
         title: "Push Notifications",
         href: "/dashboard/notifications/push",
@@ -105,32 +136,6 @@ const menuItems: MenuItem[] = [
         title: "Subscriber Management",
         href: "/dashboard/notifications/subscribers",
         icon: UserCheck,
-      },
-    ],
-  },
-  {
-    title: "User Management",
-    icon: Users,
-    items: [
-      {
-        title: "Wallet Users",
-        href: "/dashboard/users/wallets",
-        icon: Users,
-      },
-      {
-        title: "Email Verification",
-        href: "/dashboard/users/verification",
-        icon: UserCheck,
-      },
-      {
-        title: "User Preferences",
-        href: "/dashboard/users/preferences", 
-        icon: Settings,
-      },
-      {
-        title: "User Activity Logs",
-        href: "/dashboard/users/activity",
-        icon: Activity,
       },
     ],
   },
