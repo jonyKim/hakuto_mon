@@ -18,13 +18,14 @@ import {
 import { stakeStatsApi } from '@/lib/api/withdraw-stats'
 
 interface WithdrawStats {
-  total_withdrawals: number
-  total_amount: number
-  today_withdrawals: number
-  pending_withdrawals: number
-  by_date: { date: string; count: number; amount: number }[]
-  by_user: { user_address: string; total_count: number; total_amount: number }[]
-  recent_withdrawals: any[]
+  total_withdrawn: number
+  total_withdrawals?: number
+  total_amount?: number
+  today_withdrawals?: number
+  pending_withdrawals?: number
+  by_date: { date: string; total_withdrawn: number; count?: number; amount?: number }[]
+  by_user?: { user_address?: string; own_waletaddress?: string; total_count?: number; total_amount?: number }[]
+  recent_withdrawals?: any[]
 }
 
 interface StatCardProps {
@@ -70,6 +71,7 @@ function StatCard({ title, value, change, icon: Icon, description, suffix = "" }
 
 export default function WithdrawalAnalyticsPage() {
   const [withdrawStats, setWithdrawStats] = useState<WithdrawStats>({
+    total_withdrawn: 0,
     total_withdrawals: 0,
     total_amount: 0,
     today_withdrawals: 0,
@@ -136,14 +138,14 @@ export default function WithdrawalAnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Withdrawals"
-          value={withdrawStats.total_withdrawals || 0}
+          value={withdrawStats.total_withdrawals || withdrawStats.by_date?.length || 0}
           change={14.3}
           icon={ArrowUpDown}
           description="Total withdrawal transactions"
         />
         <StatCard
           title="Total Amount"
-          value={withdrawStats.total_amount || 0}
+          value={withdrawStats.total_withdrawn || 0}
           change={18.7}
           icon={DollarSign}
           description="Total amount withdrawn"
@@ -186,16 +188,16 @@ export default function WithdrawalAnalyticsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Total Processed</span>
-                    <Badge variant="secondary">{(withdrawStats.total_withdrawals || 0).toLocaleString()}</Badge>
+                    <Badge variant="secondary">{(withdrawStats.total_withdrawals || withdrawStats.by_date?.length || 0).toLocaleString()}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Total Amount</span>
-                    <Badge variant="outline">{(withdrawStats.total_amount || 0).toLocaleString()} HKTM</Badge>
+                    <Badge variant="outline">{(withdrawStats.total_withdrawn || 0).toLocaleString()} HKTM</Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Average per Transaction</span>
                     <Badge>
-                      {Math.round((withdrawStats.total_amount || 0) / (withdrawStats.total_withdrawals || 1)).toLocaleString()} HKTM
+                      {Math.round((withdrawStats.total_withdrawn || 0) / (withdrawStats.total_withdrawals || withdrawStats.by_date?.length || 1)).toLocaleString()} HKTM
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
@@ -226,7 +228,7 @@ export default function WithdrawalAnalyticsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Processing Status</span>
                     <Badge variant="outline">
-                      {withdrawStats.pending_withdrawals > 0 ? 'Pending' : 'Up to Date'}
+                      {(withdrawStats.pending_withdrawals || 0) > 0 ? 'Pending' : 'Up to Date'}
                     </Badge>
                   </div>
                 </div>
@@ -250,14 +252,14 @@ export default function WithdrawalAnalyticsPage() {
                     <div className="flex items-center gap-3">
                       <Badge variant="outline">#{index + 1}</Badge>
                       <div>
-                        <div className="text-sm font-medium">{item.date}</div>
+                        <div className="text-sm font-medium">{new Date(item.date).toLocaleDateString()}</div>
                         <div className="text-xs text-muted-foreground">
-                          {item.count} transactions
+                          {item.count || 1} transactions
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium">{item.amount?.toLocaleString() || 0}</div>
+                      <div className="text-sm font-medium">{(item.total_withdrawn || item.amount || 0).toLocaleString()}</div>
                       <div className="text-xs text-muted-foreground">HKTM withdrawn</div>
                     </div>
                   </div>
@@ -277,25 +279,28 @@ export default function WithdrawalAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {withdrawStats.by_user?.slice(0, 10).map((user, index) => (
-                  <div key={user.user_address} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline">#{index + 1}</Badge>
-                      <div>
-                        <div className="text-sm font-medium">
-                          {user.user_address.slice(0, 6)}...{user.user_address.slice(-4)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {user.total_count} transactions
+                {withdrawStats.by_user?.slice(0, 10).map((user, index) => {
+                  const userAddress = user.user_address || user.own_waletaddress || '';
+                  return (
+                    <div key={userAddress || index} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline">#{index + 1}</Badge>
+                        <div>
+                          <div className="text-sm font-medium">
+                            {userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : 'Unknown Address'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {user.total_count || 0} transactions
+                          </div>
                         </div>
                       </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{user.total_amount?.toLocaleString() || 0}</div>
+                        <div className="text-xs text-muted-foreground">HKTM withdrawn</div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">{user.total_amount?.toLocaleString() || 0}</div>
-                      <div className="text-xs text-muted-foreground">HKTM withdrawn</div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                }) || <div className="text-center text-muted-foreground py-4">No user data available</div>}
               </div>
             </CardContent>
           </Card>
@@ -324,7 +329,7 @@ export default function WithdrawalAnalyticsPage() {
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-purple-500">
-                    {Math.round((withdrawStats.total_amount || 0) / (withdrawStats.total_withdrawals || 1)).toLocaleString()}
+                    {Math.round((withdrawStats.total_withdrawn || 0) / (withdrawStats.total_withdrawals || withdrawStats.by_date?.length || 1)).toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">Avg per Transaction</div>
                 </div>
