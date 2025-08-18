@@ -30,5 +30,11 @@ export function createEmailVerificationRouter(
         emailVerificationController.getVerificationStatus
     );
 
+    // 테스트용: 인증 코드 조회 (개발/테스트 환경에서만 사용)
+    router.get(
+        '/test/code/:user_id',
+        emailVerificationController.getTestVerificationCode
+    );
+
     return router;
 } 

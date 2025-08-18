@@ -1,5 +1,6 @@
 import { AdminAuthRepository } from '../infrastructure/auth.repository';
 import { AdminUser } from '../domain/entities/admin_user.entity';
+import { AuthenticationError } from '../domain/errors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -28,9 +29,12 @@ export class AuthService {
         console.log('try to login', emailId, password, ip, userAgent);
         const user = await this.authRepository.findUserByEmail(emailId);
         console.log('user', user);
-        if (!user) throw new Error('존재하지 않는 계정입니다.');
+        if (!user) throw new AuthenticationError('Not found user');
+        console.log('user found', user);
         const isValid = await bcrypt.compare(password, user.adminPassword);
-        if (!isValid) throw new Error('비밀번호가 일치하지 않습니다.');
+        console.log('isValid', isValid);
+        if (!isValid) throw new AuthenticationError('Invalid password');
+        console.log('password is valid');
         await this.authRepository.updateLastLoginIp(user.id, ip);
         const token = this.generateToken(user);
         return {

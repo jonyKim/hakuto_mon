@@ -228,6 +228,58 @@ export class EmailVerificationService {
     }
 
     /**
+     * 테스트용: 인증 코드 조회 (개발/테스트 환경에서만 사용)
+     */
+    async getTestVerificationCode(userId: string): Promise<VerificationResult> {
+        try {
+            // 개발/테스트 환경에서만 허용
+            if (process.env.NODE_ENV === 'production') {
+                return {
+                    success: false,
+                    message: '프로덕션 환경에서는 사용할 수 없습니다.'
+                };
+            }
+
+            const attempt = await this.emailVerificationRepository.findByUserId(userId);
+            
+            if (!attempt) {
+                return {
+                    success: false,
+                    message: '인증 시도 기록을 찾을 수 없습니다.'
+                };
+            }
+
+            // 만료 시간 확인
+            if (new Date() > attempt.expiresAt) {
+                return {
+                    success: false,
+                    message: '인증 코드가 만료되었습니다.'
+                };
+            }
+
+            return {
+                success: true,
+                message: '테스트용 인증 코드 조회 완료',
+                data: {
+                    userId: attempt.userId,
+                    email: attempt.email,
+                    verificationCode: attempt.verificationCode,
+                    expiresAt: attempt.expiresAt.toISOString(),
+                    attemptsCount: attempt.attemptsCount,
+                    isVerified: attempt.isVerified
+                }
+            };
+
+        } catch (error) {
+            console.error('Error getting test verification code:', error);
+            return {
+                success: false,
+                message: '서버 오류가 발생했습니다.'
+            };
+        }
+    }
+
+    /**
      * 만료된 인증 시도 정리 (크론잡에서 사용)
      */
     async cleanupExpiredAttempts(): Promise<void> {

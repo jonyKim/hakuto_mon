@@ -111,6 +111,45 @@ export class EmailVerificationController {
             });
         }
     };
+
+    /**
+     * 테스트용: 인증 코드 조회 (개발/테스트 환경에서만 사용)
+     * GET /api/email-verification/test/code/:user_id
+     */
+    getTestVerificationCode = async (req: Request, res: Response): Promise<void> => {
+        try {
+            // 개발/테스트 환경에서만 허용
+            if (process.env.NODE_ENV === 'production') {
+                res.status(403).json({
+                    success: false,
+                    message: '프로덕션 환경에서는 사용할 수 없습니다.'
+                });
+                return;
+            }
+
+            const { user_id } = req.params;
+
+            if (!user_id) {
+                res.status(400).json({
+                    success: false,
+                    message: 'user_id가 필요합니다.'
+                });
+                return;
+            }
+
+            const result = await this.emailVerificationService.getTestVerificationCode(user_id);
+
+            const statusCode = result.success ? 200 : 404;
+            res.status(statusCode).json(result);
+
+        } catch (error) {
+            console.error('Error in getTestVerificationCode:', error);
+            res.status(500).json({
+                success: false,
+                message: '서버 오류가 발생했습니다.'
+            });
+        }
+    };
 }
 
 /**

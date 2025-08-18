@@ -32,6 +32,18 @@ export class EmailVerificationAttemptRepository {
         });
     }
 
+    async findByUserId(userId: string): Promise<EmailVerificationAttempt | null> {
+        return await this.repository.findOne({
+            where: { 
+                userId,
+                isVerified: false,
+                expiresAt: MoreThan(new Date())
+            },
+            relations: ['user'],
+            order: { createdAt: 'DESC' }
+        });
+    }
+
     async findByUserIdAndEmail(userId: string, email: string): Promise<EmailVerificationAttempt | null> {
         return await this.repository.findOne({
             where: { 

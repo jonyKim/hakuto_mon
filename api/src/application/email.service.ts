@@ -1,3 +1,5 @@
+import { FirebaseEmailService } from '../infrastructure/firebase-email.service';
+
 export interface EmailConfig {
     host: string;
     port: number;
@@ -16,10 +18,33 @@ export interface EmailTemplate {
 
 export class EmailService {
     private config: EmailConfig;
+    private firebaseEmailService: FirebaseEmailService | null = null;
 
     constructor(config: EmailConfig) {
         this.config = config;
-        // config는 실제 이메일 서비스 구현시 사용됩니다
+        
+        // Firebase 설정이 있는 경우 Firebase Email Service 초기화
+        const projectId = process.env.FIREBASE_PROJECT_ID;
+        const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+
+        if (projectId && privateKey && clientEmail) {
+            try {
+                const firebaseConfig = {
+                    projectId,
+                    privateKey,
+                    clientEmail,
+                };
+                this.firebaseEmailService = new FirebaseEmailService(firebaseConfig);
+                this.firebaseEmailService.initialize();
+                console.log('Firebase Email Service initialized in EmailService');
+            } catch (error) {
+                console.error('Failed to initialize Firebase Email Service:', error);
+                this.firebaseEmailService = null;
+            }
+        } else {
+            console.warn('Firebase configuration missing. Using mock email service.');
+        }
     }
 
     /**
@@ -31,6 +56,12 @@ export class EmailService {
         userName?: string
     ): Promise<boolean> {
         try {
+            // Firebase Email Service가 사용 가능한 경우 우선 사용
+            if (this.firebaseEmailService) {
+                return await this.firebaseEmailService.sendVerificationCode(email, verificationCode, userName);
+            }
+            
+            // Firebase를 사용할 수 없는 경우 기존 방식 사용
             const template = this.getVerificationEmailTemplate(verificationCode, userName);
             return await this.sendEmailInternal(email, template);
         } catch (error) {
@@ -47,6 +78,12 @@ export class EmailService {
         userName?: string
     ): Promise<boolean> {
         try {
+            // Firebase Email Service가 사용 가능한 경우 우선 사용
+            if (this.firebaseEmailService) {
+                return await this.firebaseEmailService.sendVerificationSuccessEmail(email, userName);
+            }
+            
+            // Firebase를 사용할 수 없는 경우 기존 방식 사용
             const template = this.getVerificationSuccessTemplate(userName);
             return await this.sendEmailInternal(email, template);
         } catch (error) {
@@ -59,7 +96,23 @@ export class EmailService {
      * 일반 이메일 발송 (외부에서 사용 가능)
      */
     async sendEmail(to: string, template: EmailTemplate): Promise<boolean> {
-        return await this.sendEmailInternal(to, template);
+        try {
+            // Firebase Email Service가 사용 가능한 경우 우선 사용
+            if (this.firebaseEmailService) {
+                return await this.firebaseEmailService.sendEmail({
+                    to,
+                    subject: template.subject,
+                    html: template.html,
+                    text: template.text
+                });
+            }
+            
+            // Firebase를 사용할 수 없는 경우 기존 방식 사용
+            return await this.sendEmailInternal(to, template);
+        } catch (error) {
+            console.error('Failed to send email:', error);
+            return false;
+        }
     }
 
     /**
@@ -86,13 +139,13 @@ export class EmailService {
         const name = userName || '사용자';
         
         return {
-            subject: '[HAKUTO MON] 이메일 인증 코드',
+            subject: '[HAKUTO MON] Email Verification Code',
             html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="utf-8">
-                    <title>이메일 인증</title>
+                    <title>Email Verification</title>
                     <style>
                         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -108,49 +161,49 @@ export class EmailService {
                     <div class="container">
                         <div class="header">
                             <h1>🚀 HAKUTO MON</h1>
-                            <p>이메일 인증을 완료해주세요</p>
+                            <p>Please verify your email address</p>
                         </div>
                         <div class="content">
-                            <h2>안녕하세요, ${name}님!</h2>
-                            <p>HAKUTO MON 서비스를 이용해주셔서 감사합니다.</p>
-                            <p>아래 인증 코드를 앱에 입력하여 이메일 인증을 완료해주세요.</p>
+                            <h2>Hello, ${name}!</h2>
+                            <p>Thank you for using HAKUTO MON.</p>
+                            <p>Please enter the verification code in the app to complete the email verification.</p>
                             
                             <div class="code">
-                                <p>인증 코드</p>
+                                <p>Verification Code</p>
                                 <div class="code-number">${code}</div>
                             </div>
                             
                             <div class="warning">
                                 <strong>⚠️ 주의사항:</strong>
                                 <ul>
-                                    <li>이 코드는 10분간 유효합니다.</li>
-                                    <li>본인이 요청하지 않은 경우 이 이메일을 무시해주세요.</li>
-                                    <li>타인과 코드를 공유하지 마세요.</li>
+                                    <li>This code is valid for 10 minutes.</li>
+                                    <li>If you did not request this email, please ignore it.</li>
+                                    <li>Do not share this code with others.</li>
                                 </ul>
                             </div>
                             
-                            <p>문의사항이 있으시면 언제든 연락주세요.</p>
+                            <p>If you have any questions, please contact us anytime.</p>
                         </div>
                         <div class="footer">
                             <p>© 2025 HAKUTO MON. All rights reserved.</p>
-                            <p>이 이메일은 자동으로 발송되었습니다.</p>
+                            <p>This email was automatically sent.</p>
                         </div>
                     </div>
                 </body>
                 </html>
             `,
             text: `
-HAKUTO MON 이메일 인증
+HAKUTO MON Email Verification
 
-안녕하세요, ${name}님!
+Hello, ${name}!
 
-아래 인증 코드를 앱에 입력해주세요:
+Please enter the verification code in the app:
 ${code}
 
-주의사항:
-- 이 코드는 10분간 유효합니다.
-- 본인이 요청하지 않은 경우 이 이메일을 무시해주세요.
-- 타인과 코드를 공유하지 마세요.
+Warning:
+- This code is valid for 10 minutes.
+- If you did not request this email, please ignore it.
+- Do not share this code with others.
 
 © 2025 HAKUTO MON
             `
@@ -164,13 +217,13 @@ ${code}
         const name = userName || '사용자';
         
         return {
-            subject: '[HAKUTO MON] 이메일 인증이 완료되었습니다',
+            subject: '[HAKUTO MON] Email Verification Success',
             html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="utf-8">
-                    <title>인증 완료</title>
+                    <title>Email Verification Success</title>
                     <style>
                         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -184,25 +237,25 @@ ${code}
                     <div class="container">
                         <div class="header">
                             <h1>🎉 HAKUTO MON</h1>
-                            <p>인증이 완료되었습니다!</p>
+                            <p>Email Verification Success</p>
                         </div>
                         <div class="content">
-                            <h2>축하합니다, ${name}님!</h2>
+                            <h2>Congratulations, ${name}!</h2>
                             
                             <div class="success">
-                                <h3>✅ 이메일 인증 완료</h3>
-                                <p>이제 모든 알림 서비스를 이용하실 수 있습니다.</p>
+                                <h3>✅ Email Verification Success</h3>
+                                <p>You can now use all the notification services.</p>
                             </div>
                             
                             <p>HAKUTO MON에서 제공하는 서비스:</p>
                             <ul>
-                                <li>📈 실시간 가격 알림</li>
-                                <li>📱 푸시 알림</li>
-                                <li>📧 이메일 알림</li>
-                                <li>🔔 커스텀 알림 설정</li>
+                                <li>📈 Real-time price alerts</li>
+                                <li>📱 Push notifications</li>
+                                <li>📧 Email notifications</li>
+                                <li>🔔 Custom notification settings</li>
                             </ul>
                             
-                            <p>감사합니다!</p>
+                            <p>Thank you!</p>
                         </div>
                         <div class="footer">
                             <p>© 2025 HAKUTO MON. All rights reserved.</p>
@@ -212,18 +265,18 @@ ${code}
                 </html>
             `,
             text: `
-HAKUTO MON 이메일 인증 완료
+HAKUTO MON Email Verification Success
 
-축하합니다, ${name}님!
+Congratulations, ${name}!
 
-✅ 이메일 인증이 완료되었습니다.
-이제 모든 알림 서비스를 이용하실 수 있습니다.
+✅ Email Verification Success
+You can now use all the notification services.
 
-제공 서비스:
-- 실시간 가격 알림
-- 푸시 알림
-- 이메일 알림
-- 커스텀 알림 설정
+Services provided by HAKUTO MON:
+- Real-time price alerts
+- Push notifications
+- Email notifications
+- Custom notification settings
 
 © 2025 HAKUTO MON
             `

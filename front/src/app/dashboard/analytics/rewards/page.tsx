@@ -21,7 +21,7 @@ interface RewardStats {
   total_rewards_value?: number
   by_date: { date: string; total_rewards: number; total_value?: number }[]
   by_user: { own_waletaddress: string; total_rewards: number; total_value?: number }[]
-  recent_rewards: any[]
+  recent_rewards: { id: string; own_waletaddress: string; total_rewards: number; reward_date: string }[]
 }
 
 interface StatCardProps {

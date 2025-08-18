@@ -2,14 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { WalletUser } from './wallet_user.entity';
 
 @Entity('email_verification_attempts')
-@Index(['email'])
-@Index(['verificationCode'])
-@Index(['expiresAt'])
 export class EmailVerificationAttempt {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
     @Column({ name: 'user_id' })
+    @Index()
     userId!: string;
 
     @ManyToOne(() => WalletUser, { onDelete: 'CASCADE' })
@@ -17,9 +15,11 @@ export class EmailVerificationAttempt {
     user!: WalletUser;
 
     @Column({ name: 'email', length: 255 })
+    @Index()
     email!: string;
 
     @Column({ name: 'verification_code', length: 6 })
+    @Index()
     verificationCode!: string;
 
     @Column({ name: 'attempts_count', default: 0 })
@@ -29,6 +29,7 @@ export class EmailVerificationAttempt {
     isVerified!: boolean;
 
     @Column({ name: 'expires_at' })
+    @Index()
     expiresAt!: Date;
 
     @Column({ name: 'verified_at', nullable: true })

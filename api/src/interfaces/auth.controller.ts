@@ -36,6 +36,7 @@ export class AuthController {
 
     login: RequestHandler = async (req, res) => {
         try {
+            console.log('try to login...');
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 const validationErrors: ValidationError[] = errors.array().map((err: ExpressValidationError) => ({
@@ -59,6 +60,7 @@ export class AuthController {
             const userAgent = req.get('user-agent') || '';
 
             const result = await this.authService.login(email, password, ip, userAgent);
+            console.log('login result:', result);
 
             res.cookie('auth-token', result.token, {
                 httpOnly: true,

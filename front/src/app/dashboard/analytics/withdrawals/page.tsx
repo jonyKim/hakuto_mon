@@ -25,7 +25,7 @@ interface WithdrawStats {
   pending_withdrawals?: number
   by_date: { date: string; total_withdrawn: number; count?: number; amount?: number }[]
   by_user?: { user_address?: string; own_waletaddress?: string; total_count?: number; total_amount?: number }[]
-  recent_withdrawals?: any[]
+  recent_withdrawals?: { id: string; own_waletaddress: string; total_withdrawn: number; withdraw_date: string }[]
 }
 
 interface StatCardProps {

@@ -1,5 +1,9 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
+import { AdminUser } from '../domain/entities/admin_user.entity';
+import { WalletUser } from '../domain/entities/wallet_user.entity';
+import { EmailVerificationAttempt } from '../domain/entities/email_verification_attempt.entity';
+import { NotificationLog } from '../domain/entities/notification_log.entity';
 
 // 환경 변수 로드
 if (process.env.NODE_ENV === 'test') {
@@ -30,9 +34,10 @@ export const AppDataSource = new DataSource({
     synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
     entities: [
-        process.env.NODE_ENV === 'production'
-            ? 'dist/domain/entities/**/*.js'
-            : 'src/domain/entities/**/*.ts'
+        AdminUser,
+        WalletUser,
+        EmailVerificationAttempt,
+        NotificationLog
     ],
     migrations: [
         process.env.NODE_ENV === 'production'

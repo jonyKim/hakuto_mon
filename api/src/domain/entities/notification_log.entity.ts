@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { WalletUser } from './wallet_user.entity';
 
 export enum NotificationType {
@@ -15,10 +15,6 @@ export enum NotificationStatus {
 }
 
 @Entity('notification_logs')
-@Index(['user_id'])
-@Index(['type'])
-@Index(['status'])
-@Index(['created_at'])
 export class NotificationLog {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
