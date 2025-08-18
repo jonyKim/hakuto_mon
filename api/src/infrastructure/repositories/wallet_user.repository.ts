@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull, Between } from 'typeorm';
 import { AppDataSource } from '../database';
 import { WalletUser } from '../../domain/entities/wallet_user.entity';
 
@@ -90,5 +90,36 @@ export class WalletUserRepository {
 
     async count(): Promise<number> {
         return await this.repository.count();
+    }
+
+    // 통계 관련 메서드들
+    async getVerifiedUsersCount(): Promise<number> {
+        return await this.repository.count({
+            where: { emailVerified: true }
+        });
+    }
+
+    async getUnverifiedUsersCount(): Promise<number> {
+        return await this.repository.count({
+            where: { emailVerified: false }
+        });
+    }
+
+    async getUsersWithFcmTokenCount(): Promise<number> {
+        return await this.repository.count({
+            where: { fcmToken: Not(IsNull()) }
+        });
+    }
+
+    async getTodayRegistrationsCount(): Promise<number> {
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+        return await this.repository.count({
+            where: {
+                createdAt: Between(startOfDay, endOfDay)
+            }
+        });
     }
 } 

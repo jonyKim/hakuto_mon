@@ -3,10 +3,9 @@ import { WalletUser } from '../domain/entities/wallet_user.entity';
 
 export interface WalletUserStats {
     totalUsers: number;
-    emailVerifiedUsers: number;
-    usersWithFcmToken: number;
-    recentRegistrations: number; // 최근 7일
-    verificationRate: number; // 이메일 인증률
+    verifiedUsers: number;
+    unverifiedUsers: number;
+    todayRegistrations: number;
 }
 
 export interface UserSearchFilters {
@@ -164,16 +163,16 @@ export class WalletUserService {
      * 사용자 통계 조회
      */
     async getUserStats(): Promise<WalletUserStats> {
-        const total = await this.walletUserRepository.count();
+        const totalUsers = await this.walletUserRepository.count();
+        const verifiedUsers = await this.walletUserRepository.getVerifiedUsersCount();
+        const unverifiedUsers = await this.walletUserRepository.getUnverifiedUsersCount();
+        const todayRegistrations = await this.walletUserRepository.getTodayRegistrationsCount();
         
-        // 기본 통계 (실제 구현시 Repository에 추가 메서드 필요)
-        // 현재는 간단한 형태로 구현
         return {
-            totalUsers: total,
-            emailVerifiedUsers: 0, // TODO: Repository 메서드 추가 필요
-            usersWithFcmToken: 0, // TODO: Repository 메서드 추가 필요
-            recentRegistrations: 0, // TODO: Repository 메서드 추가 필요
-            verificationRate: 0 // TODO: 계산 로직 추가 필요
+            totalUsers,
+            verifiedUsers,
+            unverifiedUsers,
+            todayRegistrations
         };
     }
 

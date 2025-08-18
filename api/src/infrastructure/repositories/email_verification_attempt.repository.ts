@@ -1,4 +1,4 @@
-import { Repository, MoreThan } from 'typeorm';
+import { Repository, MoreThan, Between } from 'typeorm';
 import { AppDataSource } from '../database';
 import { EmailVerificationAttempt } from '../../domain/entities/email_verification_attempt.entity';
 
@@ -116,5 +116,60 @@ export class EmailVerificationAttemptRepository {
 
     async deleteByUserId(userId: string): Promise<void> {
         await this.repository.delete({ userId });
+    }
+
+    // 어드민용 통계 메서드들
+    async getTotalAttempts(): Promise<number> {
+        return await this.repository.count();
+    }
+
+    async getSuccessfulVerifications(): Promise<number> {
+        return await this.repository.count({
+            where: { isVerified: true }
+        });
+    }
+
+    async getFailedAttempts(): Promise<number> {
+        const total = await this.getTotalAttempts();
+        const successful = await this.getSuccessfulVerifications();
+        const pending = await this.getPendingVerifications();
+        return total - successful - pending;
+    }
+
+    async getPendingVerifications(): Promise<number> {
+        return await this.repository.count({
+            where: {
+                isVerified: false,
+                expiresAt: MoreThan(new Date())
+            }
+        });
+    }
+
+    async getTodayAttempts(): Promise<number> {
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+        return await this.repository.count({
+            where: {
+                createdAt: Between(startOfDay, endOfDay)
+            }
+        });
+    }
+
+    async getRecentAttempts(limit: number = 50): Promise<any[]> {
+        return await this.repository.find({
+            order: { createdAt: 'DESC' },
+            take: limit,
+            relations: ['user']
+        });
+    }
+
+    async getUserAttempts(userId: string): Promise<any[]> {
+        return await this.repository.find({
+            where: { userId },
+            order: { createdAt: 'DESC' },
+            relations: ['user']
+        });
     }
 } 

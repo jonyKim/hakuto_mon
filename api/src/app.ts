@@ -45,6 +45,8 @@ import { createEmailVerificationRouter } from './interfaces/email_verification.r
 import { EmailVerificationController } from './interfaces/email_verification.controller';
 import { createAdminWalletUserRouter } from './interfaces/admin_wallet_user.routes';
 import { AdminWalletUserController } from './interfaces/admin_wallet_user.controller';
+import { createAdminEmailVerificationRouter } from './interfaces/admin_email_verification.routes';
+import { AdminEmailVerificationController } from './interfaces/admin_email_verification.controller';
 import { EmailVerificationService } from './application/email_verification.service';
 import { EmailService } from './application/email.service';
 import { EmailVerificationAttemptRepository } from './infrastructure/repositories/email_verification_attempt.repository';
@@ -131,6 +133,12 @@ const emailVerificationController = new EmailVerificationController(emailVerific
 // Admin Wallet User dependencies
 const adminWalletUserController = new AdminWalletUserController();
 
+// Admin Email Verification dependencies
+const adminEmailVerificationController = new AdminEmailVerificationController(
+    emailVerificationService,
+    emailVerificationAttemptRepository
+);
+
 // Firebase and Notification dependencies
 const firebaseService = new FirebaseService({
     projectId: process.env.FIREBASE_PROJECT_ID || '',
@@ -169,6 +177,7 @@ app.use('/api/admin/staking-stats', createStakingStatsRouter(stakingStatsControl
 app.use('/api/admin/reward-stats', createRewardStatsRouter(rewardStatsController));
 app.use('/api/admin/withdraw-stats', createWithdrawStatsRouter(withdrawStatsController));
 app.use('/api/admin/wallet-users', createAdminWalletUserRouter(adminWalletUserController));
+app.use('/api/admin/email-verification', createAdminEmailVerificationRouter(adminEmailVerificationController));
 
 // Public API routes
 app.use('/api/wallet-users', walletUserRoutes);
