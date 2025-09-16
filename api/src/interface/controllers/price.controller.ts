@@ -322,6 +322,7 @@ export class PriceController {
    */
   async getMexcApiStatus(req: Request, res: Response): Promise<void> {
     try {
+      const configuration = this.mexcService.getConfiguration();
       const isHealthy = await this.mexcService.checkApiHealth();
       const serverTime = isHealthy ? await this.mexcService.getServerTime() : null;
       const symbolInfo = isHealthy ? await this.mexcService.getSymbolInfo() : null;
@@ -330,6 +331,11 @@ export class PriceController {
         success: true,
         message: 'MEXC API 상태 확인 완료',
         data: {
+          configuration: {
+            baseUrl: configuration.baseUrl,
+            symbol: configuration.symbol,
+            hasApiCredentials: configuration.hasApiCredentials
+          },
           isHealthy,
           serverTime,
           symbolInfo,
