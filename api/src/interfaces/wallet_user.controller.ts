@@ -25,12 +25,13 @@ export class WalletUserController {
                 return;
             }
 
-            const { wallet_address, email } = req.body;
+            const { wallet_address, email, fcm_token } = req.body;
 
             // 새 사용자 생성 (중복 확인은 서비스에서 처리)
             const newUser = await this.walletUserService.createUser({
                 walletAddress: wallet_address,
-                email: email || undefined
+                email: email || undefined,
+                fcmToken: fcm_token || undefined
             });
 
             res.status(201).json({
@@ -372,6 +373,107 @@ export class WalletUserController {
             });
         }
     };
+
+    // FCM 토큰 업데이트
+    updateFCMToken = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                res.status(400).json({
+                    success: false,
+                    message: '유효하지 않은 요청입니다.',
+                    errors: errors.array()
+                });
+                return;
+            }
+
+            const { wallet_address, fcm_token } = req.body;
+
+            // 지갑 주소로 사용자 조회
+            const user = await this.walletUserService.getUserByWalletAddress(wallet_address);
+            if (!user) {
+                res.status(404).json({
+                    success: false,
+                    message: '사용자를 찾을 수 없습니다.'
+                });
+                return;
+            }
+
+            // FCM 토큰 업데이트
+            const updatedUser = await this.walletUserService.updateUser(user.id, {
+                fcmToken: fcm_token
+            });
+
+            res.json({
+                success: true,
+                message: 'FCM 토큰이 성공적으로 업데이트되었습니다.',
+                data: {
+                    id: updatedUser.id,
+                    wallet_address: updatedUser.walletAddress,
+                    fcm_token_updated: true,
+                    updated_at: updatedUser.updatedAt
+                }
+            });
+
+        } catch (error: any) {
+            console.error('Error updating FCM token:', error);
+            res.status(500).json({
+                success: false,
+                message: 'FCM 토큰 업데이트 중 오류가 발생했습니다.'
+            });
+        }
+    };
+
+    // 사용자 ID로 FCM 토큰 업데이트 (인증된 사용자용)
+    updateMyFCMToken = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                res.status(400).json({
+                    success: false,
+                    message: '유효하지 않은 요청입니다.',
+                    errors: errors.array()
+                });
+                return;
+            }
+
+            const { fcm_token } = req.body;
+            const userId = req.params.id;
+
+            // 사용자 존재 확인
+            const user = await this.walletUserService.getUserById(userId);
+            if (!user) {
+                res.status(404).json({
+                    success: false,
+                    message: '사용자를 찾을 수 없습니다.'
+                });
+                return;
+            }
+
+            // FCM 토큰 업데이트
+            const updatedUser = await this.walletUserService.updateUser(userId, {
+                fcmToken: fcm_token
+            });
+
+            res.json({
+                success: true,
+                message: 'FCM 토큰이 성공적으로 업데이트되었습니다.',
+                data: {
+                    id: updatedUser.id,
+                    wallet_address: updatedUser.walletAddress,
+                    fcm_token_updated: true,
+                    updated_at: updatedUser.updatedAt
+                }
+            });
+
+        } catch (error: any) {
+            console.error('Error updating user FCM token:', error);
+            res.status(500).json({
+                success: false,
+                message: 'FCM 토큰 업데이트 중 오류가 발생했습니다.'
+            });
+        }
+    };
 }
 
 // 유효성 검사 미들웨어들
@@ -387,7 +489,13 @@ export const validateUserRegistration = [
         .optional()
         .isEmail()
         .withMessage('유효한 이메일 주소를 입력해주세요.')
-        .normalizeEmail()
+        .normalizeEmail(),
+    body('fcm_token')
+        .optional()
+        .isString()
+        .withMessage('FCM 토큰은 문자열이어야 합니다.')
+        .isLength({ min: 10 })
+        .withMessage('유효한 FCM 토큰을 입력해주세요.')
 ];
 
 export const validateUserUpdate = [
@@ -435,4 +543,36 @@ export const validatePagination = [
         .optional()
         .isInt({ min: 1, max: 100 })
         .withMessage('limit은 1~100 사이의 정수여야 합니다.')
+];
+
+// FCM 토큰 업데이트 유효성 검사
+export const validateFCMTokenUpdate = [
+    body('wallet_address')
+        .notEmpty()
+        .withMessage('지갑 주소는 필수입니다.')
+        .isLength({ min: 42, max: 42 })
+        .withMessage('유효한 지갑 주소를 입력해주세요.')
+        .matches(/^0x[a-fA-F0-9]{40}$/)
+        .withMessage('올바른 형식의 지갑 주소를 입력해주세요.'),
+    body('fcm_token')
+        .notEmpty()
+        .withMessage('FCM 토큰은 필수입니다.')
+        .isString()
+        .withMessage('FCM 토큰은 문자열이어야 합니다.')
+        .isLength({ min: 10 })
+        .withMessage('유효한 FCM 토큰을 입력해주세요.')
+];
+
+// 사용자 ID로 FCM 토큰 업데이트 유효성 검사
+export const validateMyFCMTokenUpdate = [
+    param('id')
+        .isUUID()
+        .withMessage('유효한 사용자 ID를 입력해주세요.'),
+    body('fcm_token')
+        .notEmpty()
+        .withMessage('FCM 토큰은 필수입니다.')
+        .isString()
+        .withMessage('FCM 토큰은 문자열이어야 합니다.')
+        .isLength({ min: 10 })
+        .withMessage('유효한 FCM 토큰을 입력해주세요.')
 ]; 

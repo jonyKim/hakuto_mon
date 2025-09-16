@@ -6,7 +6,9 @@ import {
     validateUserId,
     validateWalletAddress,
     validateEmailSearch,
-    validatePagination
+    validatePagination,
+    validateFCMTokenUpdate,
+    validateMyFCMTokenUpdate
 } from './wallet_user.controller';
 
 const router = Router();
@@ -38,5 +40,12 @@ router.delete('/id/:id', validateUserId, walletUserController.deleteUser);
 // === 지갑 주소 기반 조회 (기존 호환성) ===
 // 지갑 주소로 사용자 조회
 router.get('/wallet/:wallet_address', validateWalletAddress, walletUserController.getWalletUser);
+
+// === FCM 토큰 관리 ===
+// 지갑 주소로 FCM 토큰 업데이트 (앱 시작 시 사용)
+router.put('/fcm-token', validateFCMTokenUpdate, walletUserController.updateFCMToken);
+
+// 사용자 ID로 FCM 토큰 업데이트 (인증된 사용자용)
+router.put('/id/:id/fcm-token', validateMyFCMTokenUpdate, walletUserController.updateMyFCMToken);
 
 export default router; 
