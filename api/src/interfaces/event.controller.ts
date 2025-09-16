@@ -65,7 +65,16 @@ export class EventController {
             } = req.body;
 
             // JWT 토큰에서 생성자 정보 추출
-            const created_by = (req as any).admin?.uuid_admin || (req as any).admin?.email_id || 'admin';
+            let created_by = (req as any).admin?.uuid_admin || (req as any).admin?.email_id;
+            console.log('[EventController] JWT admin info:', (req as any).admin);
+            console.log('[EventController] Initial created_by:', created_by);
+
+            // 임시 해결책: created_by를 null로 설정 (nullable 필드인 경우)
+            // 또는 실제 존재하는 admin UUID 사용
+            if (!created_by || typeof created_by !== 'string' || created_by === 'admin') {
+                created_by = null; // nullable로 설정
+                console.log('[EventController] Using null for created_by (nullable field)');
+            }
 
             const event = await this.eventService.createEvent({
                 type,
