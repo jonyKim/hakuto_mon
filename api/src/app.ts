@@ -72,6 +72,7 @@ import { NotificationHistoryRepository } from './infrastructure/repositories/not
 // Alert System routes
 import alertRoutes from './interfaces/alert.routes';
 import eventRoutes from './interfaces/event.routes';
+import adminEventRoutes from './interfaces/admin_event.routes';
 import portfolioRoutes from './interfaces/portfolio.routes';
 import telegramRoutes from './interfaces/telegram.routes';
 
@@ -247,6 +248,7 @@ app.use('/api/admin/reward-stats', createRewardStatsRouter(rewardStatsController
 app.use('/api/admin/withdraw-stats', createWithdrawStatsRouter(withdrawStatsController));
 app.use('/api/admin/wallet-users', createAdminWalletUserRouter(adminWalletUserController));
 app.use('/api/admin/email-verification', createAdminEmailVerificationRouter(adminEmailVerificationController));
+app.use('/api/admin/events', adminEventRoutes);
 
 // Public API routes
 app.use('/api/wallet-users', walletUserRoutes);

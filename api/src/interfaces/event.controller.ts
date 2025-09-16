@@ -132,6 +132,7 @@ export class EventController {
                 type,
                 scope,
                 status,
+                search,
                 page = 1,
                 limit = 20
             } = req.query;
@@ -141,7 +142,8 @@ export class EventController {
                 scope as string,
                 status as string,
                 Number(page),
-                Number(limit)
+                Number(limit),
+                search as string
             );
 
             res.status(200).json({
@@ -736,6 +738,10 @@ export const validateGetEvents = [
         .optional()
         .isIn(['upcoming', 'active', 'ended'])
         .withMessage('유효한 상태를 선택해주세요.'),
+    query('search')
+        .optional()
+        .isLength({ max: 100 })
+        .withMessage('검색어는 100자 이하여야 합니다.'),
     query('page')
         .optional()
         .isInt({ min: 1 })
