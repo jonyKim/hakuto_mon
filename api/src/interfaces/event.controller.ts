@@ -61,9 +61,11 @@ export class EventController {
                 end_date,
                 images,
                 links,
-                tags,
-                created_by
+                tags
             } = req.body;
+
+            // JWT 토큰에서 생성자 정보 추출
+            const created_by = (req as any).admin?.uuid_admin || (req as any).admin?.email_id || 'admin';
 
             const event = await this.eventService.createEvent({
                 type,
@@ -683,10 +685,8 @@ export const validateCreateEvent = [
     body('end_date')
         .optional()
         .isISO8601()
-        .withMessage('유효한 종료 날짜를 입력해주세요.'),
-    body('created_by')
-        .notEmpty()
-        .withMessage('생성자 정보는 필수입니다.')
+        .withMessage('유효한 종료 날짜를 입력해주세요.')
+    // created_by는 JWT 토큰에서 자동으로 추출됨
 ];
 
 export const validateUpdateEvent = [
