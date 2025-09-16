@@ -71,7 +71,7 @@ import { NotificationHistoryRepository } from './infrastructure/repositories/not
 
 // Alert System routes
 import alertRoutes from './interfaces/alert.routes';
-import eventRoutes from './interface/routes/event.routes';
+import eventRoutes from './interfaces/event.routes';
 import portfolioRoutes from './interfaces/portfolio.routes';
 import telegramRoutes from './interfaces/telegram.routes';
 
@@ -79,8 +79,8 @@ import telegramRoutes from './interfaces/telegram.routes';
 import { SchedulerManager } from './infrastructure/schedulers/scheduler_manager';
 import { schedulerManager as priceSchedulerManager } from './infrastructure/schedulers/scheduler.manager';
 
-// Price System imports
-import priceRoutes from './interface/routes/price.routes';
+// Price System imports (TODO: 구현 필요)
+// import priceRoutes from './interfaces/price.routes';
 
 dotenv.config();
 
@@ -254,12 +254,12 @@ app.use('/api/email-verification', createEmailVerificationRouter(emailVerificati
 
 // Alert System API routes
 app.use('/api/alerts', alertRoutes);
-app.use('/api', eventRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/telegram', telegramRoutes);
 
-// Price System API routes
-app.use('/api/price', priceRoutes);
+// Price System API routes (TODO: 구현 필요)
+// app.use('/api/price', priceRoutes);
 
 // Scheduler management endpoints (Admin only)
 app.get('/api/admin/scheduler/status', (_req, res) => {

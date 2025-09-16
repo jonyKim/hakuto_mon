@@ -497,4 +497,26 @@ export class EventService {
 
         return statusLabels[status] || status;
     }
+
+    /**
+     * 사용자에게 알림 발송
+     */
+    async sendNotificationToUser(userId: string, notification: {
+        title: string;
+        message: string;
+        data: any;
+    }): Promise<void> {
+        try {
+            await this.notificationService.sendAlert({
+                userId,
+                title: notification.title,
+                message: notification.message,
+                data: notification.data,
+                preferredType: 'push'
+            });
+        } catch (error) {
+            console.error(`Failed to send notification to user ${userId}:`, error);
+            throw error;
+        }
+    }
 }

@@ -553,6 +553,108 @@ export class EventController {
             });
         }
     };
+
+    /**
+     * 이벤트 푸시 알림 발송 (어드민 전용)
+     */
+    sendEventNotification = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                res.status(400).json({
+                    success: false,
+                    message: '유효하지 않은 요청입니다.',
+                    errors: errors.array()
+                });
+                return;
+            }
+
+            const { event_id } = req.params;
+            const { customMessage, targetScope } = req.body;
+
+            const event = await this.eventService.getEventById(event_id);
+            if (!event) {
+                res.status(404).json({
+                    success: false,
+                    message: '이벤트를 찾을 수 없습니다.'
+                });
+                return;
+            }
+
+            // Event Alert를 설정한 사용자들 조회
+            const alertRuleRepository = new AlertRuleRepository();
+            const eventAlerts = await alertRuleRepository.findByType('event');
+            
+            // 스코프에 따른 필터링
+            const filteredAlerts = eventAlerts.filter(alert => {
+                const alertScope = alert.conditions?.scope;
+                const eventScope = targetScope || event.scope;
+                
+                // 'all_projects'인 경우 모든 이벤트 수신
+                if (alertScope === 'all_projects') return true;
+                
+                // 특정 스코프가 일치하는 경우
+                return alertScope === eventScope;
+            });
+
+            console.log(`[EventController] 이벤트 알림 발송 대상: ${filteredAlerts.length}명`);
+
+            // 각 사용자에게 푸시 알림 발송
+            const notificationPromises = filteredAlerts.map(async (alert) => {
+                try {
+                    const title = `🎉 ${event.title}`;
+                    const message = customMessage || event.description || '새로운 이벤트가 등록되었습니다.';
+
+                    await this.eventService.sendNotificationToUser(alert.userId, {
+                        title,
+                        message,
+                        data: {
+                            type: 'event',
+                            eventId: event.id,
+                            eventType: event.type,
+                            scope: event.scope,
+                            alertId: alert.id
+                        }
+                    });
+
+                    console.log(`[EventController] 알림 발송 성공: ${alert.userId}`);
+                    return { userId: alert.userId, success: true };
+                } catch (error) {
+                    console.error(`[EventController] 알림 발송 실패 ${alert.userId}:`, error);
+                    return { 
+                        userId: alert.userId, 
+                        success: false, 
+                        error: error instanceof Error ? error.message : '알 수 없는 오류' 
+                    };
+                }
+            });
+
+            const results = await Promise.all(notificationPromises);
+            const successCount = results.filter(r => r.success).length;
+            const failCount = results.filter(r => !r.success).length;
+
+            res.json({
+                success: true,
+                message: `이벤트 알림이 발송되었습니다.`,
+                data: {
+                    eventId: event.id,
+                    eventTitle: event.title,
+                    totalTargets: filteredAlerts.length,
+                    successCount,
+                    failCount,
+                    results
+                }
+            });
+
+        } catch (error) {
+            console.error('[EventController] 이벤트 알림 발송 실패:', error);
+            res.status(500).json({
+                success: false,
+                message: '이벤트 알림 발송 중 오류가 발생했습니다.',
+                error: error instanceof Error ? error.message : '알 수 없는 오류'
+            });
+        }
+    };
 }
 
 // 유효성 검사 미들웨어들
@@ -649,4 +751,18 @@ export const validatePopularEvents = [
         .optional()
         .isInt({ min: 1, max: 50 })
         .withMessage('limit은 1~50 사이의 정수여야 합니다.')
+];
+
+export const validateSendNotification = [
+    param('event_id')
+        .isUUID()
+        .withMessage('유효한 이벤트 ID를 입력해주세요.'),
+    body('customMessage')
+        .optional()
+        .isLength({ max: 500 })
+        .withMessage('메시지는 500자 이하여야 합니다.'),
+    body('targetScope')
+        .optional()
+        .isIn(['all_projects', 'hakuto_token', 'ecosystem', 'defi', 'nft'])
+        .withMessage('유효한 타겟 범위를 선택해주세요.')
 ];
