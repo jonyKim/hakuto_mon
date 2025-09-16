@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { AssetPriceRepository } from '../../infrastructure/repositories/asset_price.repository';
-import { PriceCollectionService } from '../../application/price_collection.service';
-import { PriceMonitoringService } from '../../application/price_monitoring.service';
-import { MexcService } from '../../infrastructure/services/mexc.service';
-import { schedulerManager } from '../../infrastructure/schedulers/scheduler.manager';
+import { AssetPriceRepository } from '../infrastructure/repositories/asset_price.repository';
+import { PriceCollectionService } from '../application/price_collection.service';
+import { PriceMonitoringService } from '../application/price_monitoring.service';
+import { MexcService } from '../infrastructure/services/mexc.service';
+import { schedulerManager } from '../infrastructure/schedulers/scheduler.manager';
 
 export class PriceController {
   private assetPriceRepository: AssetPriceRepository;
