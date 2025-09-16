@@ -74,9 +74,9 @@ export class Event {
     @Column({ name: 'like_count', default: 0 })
     likeCount!: number;
 
-    @Column({ name: 'created_by', length: 255, nullable: true })
+    @Column({ name: 'created_by', length: 255 })
     @Index()
-    createdBy?: string;
+    createdBy!: string;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt!: Date;

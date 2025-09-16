@@ -69,11 +69,14 @@ export class EventController {
             console.log('[EventController] JWT admin info:', (req as any).admin);
             console.log('[EventController] Initial created_by:', created_by);
 
-            // 임시 해결책: created_by를 null로 설정 (nullable 필드인 경우)
-            // 또는 실제 존재하는 admin UUID 사용
-            if (!created_by || typeof created_by !== 'string' || created_by === 'admin') {
-                created_by = null; // nullable로 설정
-                console.log('[EventController] Using null for created_by (nullable field)');
+            // JWT에서 나온 ID를 문자열로 변환해서 사용
+            if (created_by) {
+                created_by = String(created_by); // 숫자든 문자열이든 문자열로 변환
+                console.log('[EventController] Using created_by as string:', created_by);
+            } else {
+                // JWT 정보가 없는 경우 기본값 사용
+                created_by = 'system';
+                console.log('[EventController] Using default created_by: system');
             }
 
             const event = await this.eventService.createEvent({
