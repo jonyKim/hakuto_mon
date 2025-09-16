@@ -71,7 +71,7 @@ import { NotificationHistoryRepository } from './infrastructure/repositories/not
 
 // Alert System routes
 import alertRoutes from './interfaces/alert.routes';
-import eventRoutes from './interfaces/event.routes';
+import eventRoutes from './interface/routes/event.routes';
 import portfolioRoutes from './interfaces/portfolio.routes';
 import telegramRoutes from './interfaces/telegram.routes';
 
@@ -254,7 +254,7 @@ app.use('/api/email-verification', createEmailVerificationRouter(emailVerificati
 
 // Alert System API routes
 app.use('/api/alerts', alertRoutes);
-app.use('/api/events', eventRoutes);
+app.use('/api', eventRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/telegram', telegramRoutes);
 

@@ -20,28 +20,37 @@ export class EventRepository {
         scope?: string, 
         status?: string,
         page: number = 1,
-        limit: number = 20
+        limit: number = 20,
+        search?: string
     ): Promise<{ events: Event[], total: number }> {
-        const where: any = {};
-        
+        const queryBuilder = this.repository.createQueryBuilder('event');
+
+        // 기본 필터링
         if (type) {
-            where.type = type;
+            queryBuilder.andWhere('event.type = :type', { type });
         }
-        
         if (scope) {
-            where.scope = scope;
+            queryBuilder.andWhere('event.scope = :scope', { scope });
         }
-        
         if (status) {
-            where.status = status;
+            queryBuilder.andWhere('event.status = :status', { status });
         }
 
-        const [events, total] = await this.repository.findAndCount({
-            where,
-            order: { createdAt: 'DESC' },
-            skip: (page - 1) * limit,
-            take: limit
-        });
+        // 검색 기능
+        if (search) {
+            queryBuilder.andWhere(
+                '(event.title LIKE :search OR event.description LIKE :search OR event.content LIKE :search)',
+                { search: `%${search}%` }
+            );
+        }
+
+        // 정렬 및 페이징
+        queryBuilder
+            .orderBy('event.createdAt', 'DESC')
+            .skip((page - 1) * limit)
+            .take(limit);
+
+        const [events, total] = await queryBuilder.getManyAndCount();
 
         return { events, total };
     }

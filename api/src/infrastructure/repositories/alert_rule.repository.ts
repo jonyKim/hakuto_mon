@@ -55,6 +55,13 @@ export class AlertRuleRepository {
         });
     }
 
+    async findByType(type: 'price_target' | 'event' | 'portfolio'): Promise<AlertRule[]> {
+        return await this.repository.find({
+            where: { type },
+            relations: ['user']
+        });
+    }
+
     async findByAssetSymbol(assetSymbol: string): Promise<AlertRule[]> {
         return await this.repository.find({
             where: { 

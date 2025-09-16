@@ -108,10 +108,11 @@ export class EventService {
         scope?: string,
         status?: string,
         page: number = 1,
-        limit: number = 20
+        limit: number = 20,
+        search?: string
     ): Promise<EventListResponse> {
         try {
-            const { events, total } = await this.eventRepository.findAll(type, scope, status, page, limit);
+            const { events, total } = await this.eventRepository.findAll(type, scope, status, page, limit, search);
             const totalPages = Math.ceil(total / limit);
 
             return {
@@ -131,7 +132,7 @@ export class EventService {
     /**
      * 이벤트 상세 조회
      */
-    async getEvent(eventId: string): Promise<Event | null> {
+    async getEventById(eventId: string): Promise<Event | null> {
         try {
             const event = await this.eventRepository.findById(eventId);
             
@@ -151,34 +152,20 @@ export class EventService {
     /**
      * 이벤트 수정
      */
-    async updateEvent(request: UpdateEventRequest): Promise<Event | null> {
+    async updateEvent(id: string, updateData: Partial<Event>): Promise<Event | null> {
         try {
-            const existingEvent = await this.eventRepository.findById(request.id);
+            const existingEvent = await this.eventRepository.findById(id);
             if (!existingEvent) {
                 throw new Error('이벤트를 찾을 수 없습니다.');
             }
 
-            const updateData: Partial<Event> = {};
-            
-            if (request.title !== undefined) updateData.title = request.title;
-            if (request.description !== undefined) updateData.description = request.description;
-            if (request.content !== undefined) updateData.content = request.content;
-            if (request.scope !== undefined) updateData.scope = request.scope;
-            if (request.status !== undefined) updateData.status = request.status;
-            if (request.priority !== undefined) updateData.priority = request.priority;
-            if (request.startDate !== undefined) updateData.startDate = request.startDate;
-            if (request.endDate !== undefined) updateData.endDate = request.endDate;
-            if (request.images !== undefined) updateData.images = request.images;
-            if (request.links !== undefined) updateData.links = request.links;
-            if (request.tags !== undefined) updateData.tags = request.tags;
-
-            const updatedEvent = await this.eventRepository.update(request.id, updateData);
+            const updatedEvent = await this.eventRepository.update(id, updateData);
 
             if (updatedEvent) {
-                console.log(`Event updated: ${request.id} - ${updatedEvent.title}`);
+                console.log(`Event updated: ${id} - ${updatedEvent.title}`);
                 
                 // 상태 변경 시 알림 발송
-                if (request.status && request.status !== existingEvent.status) {
+                if (updateData.status && updateData.status !== existingEvent.status) {
                     await this.notifyEventSubscribers(updatedEvent, 'status_changed');
                 }
             }
