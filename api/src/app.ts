@@ -57,6 +57,27 @@ import { FirebaseService } from './application/firebase.service';
 import { NotificationService } from './application/notification.service';
 import { NotificationLogRepository } from './infrastructure/repositories/notification_log.repository';
 
+// Alert System imports
+import { AlertService } from './application/alert.service';
+import { EventService } from './application/event.service';
+import { PortfolioService } from './application/portfolio.service';
+import { TelegramService } from './application/telegram.service';
+import { AlertRuleRepository } from './infrastructure/repositories/alert_rule.repository';
+import { EventRepository } from './infrastructure/repositories/event.repository';
+import { PortfolioRepository } from './infrastructure/repositories/portfolio.repository';
+import { PortfolioHistoryRepository } from './infrastructure/repositories/portfolio_history.repository';
+import { TelegramConnectionRepository } from './infrastructure/repositories/telegram_connection.repository';
+import { NotificationHistoryRepository } from './infrastructure/repositories/notification_history.repository';
+
+// Alert System routes
+import alertRoutes from './interfaces/alert.routes';
+import eventRoutes from './interfaces/event.routes';
+import portfolioRoutes from './interfaces/portfolio.routes';
+import telegramRoutes from './interfaces/telegram.routes';
+
+// Scheduler imports
+import { SchedulerManager } from './infrastructure/schedulers/scheduler_manager';
+
 dotenv.config();
 
 const app = express();
@@ -166,8 +187,52 @@ const notificationService = new NotificationService(
     walletUserRepository
 );
 
-// NotificationService는 추후 알림 기능 구현시 사용됩니다
-console.log('NotificationService initialized:', !!notificationService);
+// Alert System dependencies
+const alertRuleRepository = new AlertRuleRepository();
+const eventRepository = new EventRepository();
+const portfolioRepository = new PortfolioRepository();
+const portfolioHistoryRepository = new PortfolioHistoryRepository();
+const telegramConnectionRepository = new TelegramConnectionRepository();
+const notificationHistoryRepository = new NotificationHistoryRepository();
+
+const telegramService = new TelegramService(
+    telegramConnectionRepository,
+    walletUserRepository
+);
+
+const portfolioService = new PortfolioService(
+    portfolioRepository,
+    portfolioHistoryRepository,
+    walletUserRepository
+);
+
+const eventService = new EventService(
+    eventRepository,
+    alertRuleRepository,
+    notificationService
+);
+
+const alertService = new AlertService(
+    alertRuleRepository,
+    notificationHistoryRepository,
+    portfolioRepository,
+    eventRepository,
+    telegramConnectionRepository,
+    walletUserRepository,
+    notificationService,
+    telegramService
+);
+
+// Scheduler Manager 초기화
+const schedulerManager = new SchedulerManager(
+    alertService,
+    portfolioService,
+    eventService,
+    telegramService,
+    notificationService
+);
+
+console.log('Alert System initialized successfully');
 
 // Admin routers
 app.use('/api/admin/auth', createAuthRouter(adminAuthController));
@@ -182,6 +247,49 @@ app.use('/api/admin/email-verification', createAdminEmailVerificationRouter(admi
 // Public API routes
 app.use('/api/wallet-users', walletUserRoutes);
 app.use('/api/email-verification', createEmailVerificationRouter(emailVerificationController));
+
+// Alert System API routes
+app.use('/api/alerts', alertRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/telegram', telegramRoutes);
+
+// Scheduler management endpoints (Admin only)
+app.get('/api/admin/scheduler/status', (_req, res) => {
+    try {
+        const status = schedulerManager.getStatus();
+        res.json({ success: true, data: status });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '스케줄러 상태 조회 실패' });
+    }
+});
+
+app.get('/api/admin/scheduler/health', async (_req, res) => {
+    try {
+        const health = await schedulerManager.healthCheck();
+        res.json({ success: true, data: health });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '헬스 체크 실패' });
+    }
+});
+
+app.post('/api/admin/scheduler/trigger', async (_req, res) => {
+    try {
+        const results = await schedulerManager.triggerManualTasks();
+        res.json({ success: true, data: results });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '수동 작업 실행 실패' });
+    }
+});
+
+app.post('/api/admin/scheduler/restart', async (_req, res) => {
+    try {
+        await schedulerManager.restart();
+        res.json({ success: true, message: '스케줄러가 재시작되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '스케줄러 재시작 실패' });
+    }
+});
 
 // Request logging middleware
 app.use((req, _res, next) => {
@@ -199,6 +307,41 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 const PORT = Number(process.env.PORT) || 3001;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`서버가 포트 ${PORT}에서 실행 중입니다`);
+
+// 서버 시작 및 스케줄러 초기화
+app.listen(PORT, '0.0.0.0', async () => {
+    console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다`);
+    
+    // 스케줄러 시작
+    try {
+        await schedulerManager.startAll();
+        console.log('✅ 알림 시스템 스케줄러가 시작되었습니다');
+    } catch (error) {
+        console.error('❌ 스케줄러 시작 실패:', error);
+    }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    console.log('🛑 SIGTERM 신호를 받았습니다. 서버를 종료합니다...');
+    try {
+        await schedulerManager.stopAll();
+        console.log('✅ 스케줄러가 정상적으로 종료되었습니다');
+        process.exit(0);
+    } catch (error) {
+        console.error('❌ 스케줄러 종료 중 오류:', error);
+        process.exit(1);
+    }
+});
+
+process.on('SIGINT', async () => {
+    console.log('🛑 SIGINT 신호를 받았습니다. 서버를 종료합니다...');
+    try {
+        await schedulerManager.stopAll();
+        console.log('✅ 스케줄러가 정상적으로 종료되었습니다');
+        process.exit(0);
+    } catch (error) {
+        console.error('❌ 스케줄러 종료 중 오류:', error);
+        process.exit(1);
+    }
 }); 

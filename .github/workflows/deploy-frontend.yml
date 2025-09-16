@@ -1,0 +1,131 @@
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'front/**'
+      - '.github/workflows/deploy-frontend.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'front/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: lfit-admin-frontend
+  REPO_OWNER: jonykim
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    defaults:
+      run:
+        working-directory: front
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: ./front
+        platforms: linux/amd64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Create .env file
+      run: |
+        cat << EOF > .env
+        # API Configuration
+        NEXT_PUBLIC_API_BASE_URL=/api
+        NEXT_PUBLIC_NODE_ENV=production
+        NEXT_PUBLIC_ALLOWED_ORIGINS=${{ secrets.NEXT_PUBLIC_ALLOWED_ORIGINS || 'http://localhost:3000' }}
+
+        # JWT Configuration
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
+        EOF
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Test SSH Connection
+      run: |
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"'
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Create project directory if it doesn't exist
+          mkdir -p ~/project/lfit-admin-front
+          
+          # Create .env file
+          cat << EOF > ~/project/lfit-admin-front/.env
+          # API Configuration
+          NEXT_PUBLIC_NODE_ENV=production
+          NEXT_PUBLIC_ALLOWED_ORIGINS=${{ secrets.NEXT_PUBLIC_ALLOWED_ORIGINS || 'http://localhost:3000' }}
+          NEXT_PUBLIC_API_SERVER_URL=${{ secrets.NEXT_PUBLIC_API_SERVER_URL || 'http://localhost:3001' }}
+          # JWT Configuration
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          EOF
+          
+          # Create docker-compose.yml
+          cat << EOF > ~/project/lfit-admin-front/docker-compose.yml
+          version: '3.8'
+          services:
+            frontend:
+              image: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}:latest
+              ports:
+                - "3000:3000"
+              env_file:
+                - .env
+              restart: unless-stopped
+          EOF
+          
+          # Pull latest image
+          cd ~/project/lfit-admin-front
+          docker pull ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.IMAGE_NAME }}:latest
+          
+          # Stop and remove existing containers
+          docker-compose down
+          
+          # Start the application
+          docker-compose up -d 

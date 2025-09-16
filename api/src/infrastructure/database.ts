@@ -4,6 +4,12 @@ import { AdminUser } from '../domain/entities/admin_user.entity';
 import { WalletUser } from '../domain/entities/wallet_user.entity';
 import { EmailVerificationAttempt } from '../domain/entities/email_verification_attempt.entity';
 import { NotificationLog } from '../domain/entities/notification_log.entity';
+import { AlertRule } from '../domain/entities/alert_rule.entity';
+import { Event } from '../domain/entities/event.entity';
+import { Portfolio } from '../domain/entities/portfolio.entity';
+import { PortfolioHistory } from '../domain/entities/portfolio_history.entity';
+import { TelegramConnection } from '../domain/entities/telegram_connection.entity';
+import { NotificationHistory } from '../domain/entities/notification_history.entity';
 
 // 환경 변수 로드
 if (process.env.NODE_ENV === 'test') {
@@ -37,7 +43,13 @@ export const AppDataSource = new DataSource({
         AdminUser,
         WalletUser,
         EmailVerificationAttempt,
-        NotificationLog
+        NotificationLog,
+        AlertRule,
+        Event,
+        Portfolio,
+        PortfolioHistory,
+        TelegramConnection,
+        NotificationHistory
     ],
     migrations: [
         process.env.NODE_ENV === 'production'
