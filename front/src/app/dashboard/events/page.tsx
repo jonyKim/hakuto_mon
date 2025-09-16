@@ -40,11 +40,11 @@ interface Event {
 
 // 폼 스키마
 const eventFormSchema = z.object({
-  type: z.string().min(1, '이벤트 타입을 선택해주세요'),
-  title: z.string().min(1, '제목을 입력해주세요').max(255, '제목은 255자 이하로 입력해주세요'),
+  type: z.string().min(1, 'Choose an event type'),
+  title: z.string().min(1, 'Enter the title').max(255, 'The title must be less than 255 characters'),
   description: z.string().optional(),
   content: z.string().optional(),
-  scope: z.string().min(1, '범위를 선택해주세요'),
+  scope: z.string().min(1, 'Choose a scope'),
   status: z.enum(['upcoming', 'active', 'ended']).default('upcoming'),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
   startDate: z.string().optional(),
@@ -91,7 +91,7 @@ export default function EventsPage() {
       setEvents(response.data.events);
       setTotalPages(response.data.pagination.totalPages);
     } catch (error) {
-      console.error('이벤트 목록 조회 실패:', error);
+      console.error('Event list fetch failed:', error);
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ export default function EventsPage() {
       form.reset();
       fetchEvents();
     } catch (error) {
-      console.error('이벤트 생성 실패:', error);
+      console.error('Event creation failed:', error);
     }
   };
 
@@ -134,40 +134,40 @@ export default function EventsPage() {
       form.reset();
       fetchEvents();
     } catch (error) {
-      console.error('이벤트 수정 실패:', error);
+      console.error('Event update failed:', error);
     }
   };
 
   // 이벤트 삭제
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('정말로 이 이벤트를 삭제하시겠습니까?')) return;
+    if (!confirm('Are you sure you want to delete this event?')) return;
 
     try {
       await eventApi.deleteEvent(eventId);
       fetchEvents();
     } catch (error) {
-      console.error('이벤트 삭제 실패:', error);
+      console.error('Event deletion failed:', error);
     }
   };
 
   // 푸시 알림 발송
   const handleSendNotification = async (event: Event) => {
-    if (!confirm(`"${event.title}" 이벤트에 대한 푸시 알림을 모든 사용자에게 발송하시겠습니까?\n\n이 작업은 실제 사용자들에게 알림이 전송됩니다.`)) return;
+    if (!confirm(`"${event.title}" Event push notification to all users?\n\nThis action will send notifications to actual users.`)) return;
 
     try {
-      console.log(`[Admin] 이벤트 푸시 알림 발송 시작: ${event.id} - ${event.title}`);
+      console.log(`[Admin] Event push notification started: ${event.id} - ${event.title}`);
       
       const response = await eventApi.sendEventNotification(event.id);
       
       if (response.success) {
-        alert(`✅ 푸시 알림 발송 완료!\n\n이벤트: ${event.title}\n상태: ${response.message}`);
-        console.log('[Admin] 푸시 알림 발송 성공:', response);
+        alert(`✅ Push notification sent successfully!\n\nEvent: ${event.title}\nStatus: ${response.message}`);
+        console.log('[Admin] Push notification sent successfully:', response);
       } else {
-        throw new Error(response.message || '알림 발송에 실패했습니다.');
+        throw new Error(response.message || 'Notification sending failed.');
       }
     } catch (error: any) {
-      console.error('[Admin] 푸시 알림 발송 실패:', error);
-      alert(`❌ 푸시 알림 발송 실패\n\n오류: ${error.response?.data?.message || error.message || '알 수 없는 오류가 발생했습니다.'}`);
+      console.error('[Admin] Push notification sending failed:', error);
+      alert(`❌ Push notification sending failed\n\nError: ${error.response?.data?.message || error.message || 'An unknown error occurred.'}`);
     }
   };
 
@@ -218,29 +218,29 @@ export default function EventsPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">이벤트 관리</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Event Management</h1>
           <p className="text-muted-foreground">
-            프로젝트 이벤트를 생성하고 관리하며 푸시 알림을 발송하세요.
+            Create and manage project events and send push notifications.
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              새 이벤트 생성
+              Create New Event
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>새 이벤트 생성</DialogTitle>
+              <DialogTitle>Create New Event</DialogTitle>
               <DialogDescription>
-                새로운 이벤트를 생성하고 사용자들에게 알림을 보낼 수 있습니다.
+                Create a new event and send notifications to users.
               </DialogDescription>
             </DialogHeader>
             <EventForm 
               form={form} 
               onSubmit={handleCreateEvent}
-              submitLabel="이벤트 생성"
+              submitLabel="Create Event"
             />
           </DialogContent>
         </Dialog>
@@ -250,7 +250,7 @@ export default function EventsPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">전체 이벤트</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -259,7 +259,7 @@ export default function EventsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">진행중</CardTitle>
+            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -270,7 +270,7 @@ export default function EventsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">예정</CardTitle>
+            <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -281,7 +281,7 @@ export default function EventsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">총 조회수</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -295,13 +295,13 @@ export default function EventsPage() {
       {/* 필터 및 검색 */}
       <Card>
         <CardHeader>
-          <CardTitle>필터 및 검색</CardTitle>
+          <CardTitle>Filter and Search</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <Input
-                placeholder="이벤트 제목, 설명으로 검색..."
+                placeholder="Search by event title, description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
@@ -309,27 +309,27 @@ export default function EventsPage() {
             </div>
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="이벤트 타입" />
+                <SelectValue placeholder="Event Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">모든 타입</SelectItem>
-                <SelectItem value="project_announcement">프로젝트 발표</SelectItem>
-                <SelectItem value="partnership">파트너십</SelectItem>
-                <SelectItem value="token_listing">토큰 상장</SelectItem>
-                <SelectItem value="staking_event">스테이킹 이벤트</SelectItem>
-                <SelectItem value="nft_drop">NFT 드롭</SelectItem>
-                <SelectItem value="airdrop">에어드롭</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="project_announcement">Project Announcement</SelectItem>
+                <SelectItem value="partnership">Partnership</SelectItem>
+                <SelectItem value="token_listing">Token Listing</SelectItem>
+                <SelectItem value="staking_event">Staking Event</SelectItem>
+                <SelectItem value="nft_drop">NFT Drop</SelectItem>
+                <SelectItem value="airdrop">Airdrop</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterScope} onValueChange={setFilterScope}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="범위" />
+                <SelectValue placeholder="Scope" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">모든 범위</SelectItem>
-                <SelectItem value="all_projects">모든 프로젝트</SelectItem>
-                <SelectItem value="hakuto_token">하쿠토 토큰</SelectItem>
-                <SelectItem value="ecosystem">생태계</SelectItem>
+                <SelectItem value="all">All Scopes</SelectItem>
+                <SelectItem value="all_projects">All Projects</SelectItem>
+                <SelectItem value="hakuto_token">Hakuto Token</SelectItem>
+                <SelectItem value="ecosystem">Ecosystem</SelectItem>
                 <SelectItem value="defi">DeFi</SelectItem>
                 <SelectItem value="nft">NFT</SelectItem>
               </SelectContent>
@@ -339,10 +339,10 @@ export default function EventsPage() {
                 <SelectValue placeholder="상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">모든 상태</SelectItem>
-                <SelectItem value="upcoming">예정</SelectItem>
-                <SelectItem value="active">진행중</SelectItem>
-                <SelectItem value="ended">종료</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="ended">Ended</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -354,24 +354,24 @@ export default function EventsPage() {
         <CardHeader>
           <CardTitle>이벤트 목록</CardTitle>
           <CardDescription>
-            등록된 이벤트를 관리하고 푸시 알림을 발송할 수 있습니다.
+            Manage registered events and send push notifications.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">로딩 중...</div>
+            <div className="text-center py-8">Loading...</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>제목</TableHead>
-                  <TableHead>타입</TableHead>
-                  <TableHead>범위</TableHead>
-                  <TableHead>상태</TableHead>
-                  <TableHead>우선순위</TableHead>
-                  <TableHead>조회수</TableHead>
-                  <TableHead>생성일</TableHead>
-                  <TableHead>작업</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Scope</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Views</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -431,15 +431,15 @@ export default function EventsPage() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>이벤트 수정</DialogTitle>
+            <DialogTitle>Edit Event</DialogTitle>
             <DialogDescription>
-              이벤트 정보를 수정합니다.
+              Edit event information.
             </DialogDescription>
           </DialogHeader>
           <EventForm 
             form={form} 
             onSubmit={handleEditEvent}
-            submitLabel="수정 완료"
+            submitLabel="Edit Event"
           />
         </DialogContent>
       </Dialog>
@@ -466,20 +466,20 @@ function EventForm({
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>이벤트 타입</FormLabel>
+                <FormLabel>Event Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="타입 선택" />
+                      <SelectValue placeholder="Select Type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="project_announcement">프로젝트 발표</SelectItem>
-                    <SelectItem value="partnership">파트너십</SelectItem>
-                    <SelectItem value="token_listing">토큰 상장</SelectItem>
-                    <SelectItem value="staking_event">스테이킹 이벤트</SelectItem>
-                    <SelectItem value="nft_drop">NFT 드롭</SelectItem>
-                    <SelectItem value="airdrop">에어드롭</SelectItem>
+                    <SelectItem value="project_announcement">Project Announcement</SelectItem>
+                    <SelectItem value="partnership">Partnership</SelectItem>
+                    <SelectItem value="token_listing">Token Listing</SelectItem>
+                    <SelectItem value="staking_event">Staking Event</SelectItem>
+                    <SelectItem value="nft_drop">NFT Drop</SelectItem>
+                    <SelectItem value="airdrop">Airdrop</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -491,17 +491,17 @@ function EventForm({
             name="scope"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>범위</FormLabel>
+                <FormLabel>Scope</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="범위 선택" />
+                      <SelectValue placeholder="Select Scope" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="all_projects">모든 프로젝트</SelectItem>
-                    <SelectItem value="hakuto_token">하쿠토 토큰</SelectItem>
-                    <SelectItem value="ecosystem">생태계</SelectItem>
+                    <SelectItem value="all_projects">All Projects</SelectItem>
+                    <SelectItem value="hakuto_token">Hakuto Token</SelectItem>
+                    <SelectItem value="ecosystem">Ecosystem</SelectItem>
                     <SelectItem value="defi">DeFi</SelectItem>
                     <SelectItem value="nft">NFT</SelectItem>
                   </SelectContent>
@@ -517,9 +517,9 @@ function EventForm({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>제목</FormLabel>
+              <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="이벤트 제목을 입력하세요" {...field} />
+                <Input placeholder="Enter the event title" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -531,9 +531,9 @@ function EventForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>설명</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input placeholder="이벤트 설명을 입력하세요" {...field} />
+                <Input placeholder="Enter the event description" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -546,7 +546,7 @@ function EventForm({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>상태</FormLabel>
+                <FormLabel>Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -554,9 +554,9 @@ function EventForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="upcoming">예정</SelectItem>
-                    <SelectItem value="active">진행중</SelectItem>
-                    <SelectItem value="ended">종료</SelectItem>
+                    <SelectItem value="upcoming">Upcoming</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="ended">Ended</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -568,7 +568,7 @@ function EventForm({
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>우선순위</FormLabel>
+                <FormLabel>Priority</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -576,9 +576,9 @@ function EventForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="low">낮음</SelectItem>
-                    <SelectItem value="medium">보통</SelectItem>
-                    <SelectItem value="high">높음</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -590,9 +590,9 @@ function EventForm({
             name="tags"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>태그</FormLabel>
+                <FormLabel>Tags</FormLabel>
                 <FormControl>
-                  <Input placeholder="태그1, 태그2, ..." {...field} />
+                  <Input placeholder="Tag1, Tag2, ..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -606,7 +606,7 @@ function EventForm({
             name="startDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>시작일</FormLabel>
+                <FormLabel>Start Date</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -619,7 +619,7 @@ function EventForm({
             name="endDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>종료일</FormLabel>
+                <FormLabel>End Date</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
