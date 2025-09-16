@@ -26,15 +26,16 @@ interface Event {
   scope: string;
   status: 'upcoming' | 'active' | 'ended';
   priority: 'low' | 'medium' | 'high';
-  startDate?: string;
-  endDate?: string;
+  start_date?: string;
+  end_date?: string;
   images?: string[];
   links?: Array<{ label: string; url: string }>;
   tags?: string[];
-  viewCount: number;
-  likeCount: number;
-  createdAt: string;
-  updatedAt: string;
+  view_count: number;
+  like_count: number;
+  created_by?: number;
+  created_at: string;
+  updated_at: string;
 }
 
 // 폼 스키마
@@ -177,8 +178,8 @@ export default function EventsPage() {
       scope: event.scope,
       status: event.status,
       priority: event.priority,
-      startDate: event.startDate ? new Date(event.startDate).toISOString().split('T')[0] : '',
-      endDate: event.endDate ? new Date(event.endDate).toISOString().split('T')[0] : '',
+      startDate: event.start_date ? new Date(event.start_date).toISOString().split('T')[0] : '',
+      endDate: event.end_date ? new Date(event.end_date).toISOString().split('T')[0] : '',
       tags: event.tags?.join(', ') || '',
     });
     setIsEditDialogOpen(true);
@@ -281,7 +282,7 @@ export default function EventsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {events.reduce((sum, e) => sum + e.viewCount, 0)}
+              {events.reduce((sum, e) => sum + e.view_count, 0)}
             </div>
           </CardContent>
         </Card>
@@ -385,9 +386,9 @@ export default function EventsPage() {
                         {event.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell>{event.viewCount}</TableCell>
+                    <TableCell>{event.view_count}</TableCell>
                     <TableCell>
-                      {new Date(event.createdAt).toLocaleDateString()}
+                      {new Date(event.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
