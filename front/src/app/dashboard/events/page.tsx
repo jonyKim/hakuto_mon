@@ -81,9 +81,9 @@ export default function EventsPage() {
       const response = await eventApi.getEvents({
         page: currentPage,
         limit: 10,
-        type: filterType || undefined,
-        scope: filterScope || undefined,
-        status: filterStatus || undefined,
+        type: filterType && filterType !== 'all' ? filterType : undefined,
+        scope: filterScope && filterScope !== 'all' ? filterScope : undefined,
+        status: filterStatus && filterStatus !== 'all' ? filterStatus : undefined,
         search: searchTerm || undefined,
       });
       
@@ -307,7 +307,7 @@ export default function EventsPage() {
                 <SelectValue placeholder="이벤트 타입" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 타입</SelectItem>
+                <SelectItem value="all">모든 타입</SelectItem>
                 <SelectItem value="project_announcement">프로젝트 발표</SelectItem>
                 <SelectItem value="partnership">파트너십</SelectItem>
                 <SelectItem value="token_listing">토큰 상장</SelectItem>
@@ -321,7 +321,7 @@ export default function EventsPage() {
                 <SelectValue placeholder="범위" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 범위</SelectItem>
+                <SelectItem value="all">모든 범위</SelectItem>
                 <SelectItem value="all_projects">모든 프로젝트</SelectItem>
                 <SelectItem value="hakuto_token">하쿠토 토큰</SelectItem>
                 <SelectItem value="ecosystem">생태계</SelectItem>
@@ -334,7 +334,7 @@ export default function EventsPage() {
                 <SelectValue placeholder="상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 상태</SelectItem>
+                <SelectItem value="all">모든 상태</SelectItem>
                 <SelectItem value="upcoming">예정</SelectItem>
                 <SelectItem value="active">진행중</SelectItem>
                 <SelectItem value="ended">종료</SelectItem>
