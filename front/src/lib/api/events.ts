@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import axiosInstance from '@/lib/axios';
 
 export interface Event {
   id: string;
@@ -109,49 +109,49 @@ export const eventApi = {
     if (params?.status) searchParams.append('status', params.status);
     if (params?.search) searchParams.append('search', params.search);
 
-    const response = await apiClient.get(`/api/admin/events?${searchParams.toString()}`);
+    const response = await axiosInstance.get(`/api/admin/events?${searchParams.toString()}`);
     return response.data;
   },
 
   // 이벤트 상세 조회
   async getEvent(id: string): Promise<EventResponse> {
-    const response = await apiClient.get(`/api/admin/events/${id}`);
+    const response = await axiosInstance.get(`/api/admin/events/${id}`);
     return response.data;
   },
 
   // 이벤트 생성
   async createEvent(data: CreateEventRequest): Promise<EventResponse> {
-    const response = await apiClient.post('/api/admin/events', data);
+    const response = await axiosInstance.post('/api/admin/events', data);
     return response.data;
   },
 
   // 이벤트 수정
   async updateEvent(id: string, data: UpdateEventRequest): Promise<EventResponse> {
-    const response = await apiClient.put(`/api/admin/events/${id}`, data);
+    const response = await axiosInstance.put(`/api/admin/events/${id}`, data);
     return response.data;
   },
 
   // 이벤트 삭제
   async deleteEvent(id: string): Promise<{ success: boolean; message: string }> {
-    const response = await apiClient.delete(`/api/admin/events/${id}`);
+    const response = await axiosInstance.delete(`/api/admin/events/${id}`);
     return response.data;
   },
 
   // 푸시 알림 발송
   async sendNotification(id: string, data: SendNotificationRequest): Promise<SendNotificationResponse> {
-    const response = await apiClient.post(`/api/admin/events/${id}/send-notification`, data);
+    const response = await axiosInstance.post(`/api/admin/events/${id}/send-notification`, data);
     return response.data;
   },
 
   // 이벤트 타입 목록 조회
   async getEventTypes(): Promise<{ success: boolean; data: EventType[] }> {
-    const response = await apiClient.get('/api/events/types');
+    const response = await axiosInstance.get('/api/events/types');
     return response.data;
   },
 
   // 이벤트 범위 목록 조회
   async getEventScopes(): Promise<{ success: boolean; data: EventScope[] }> {
-    const response = await apiClient.get('/api/events/scopes');
+    const response = await axiosInstance.get('/api/events/scopes');
     return response.data;
   },
 
@@ -165,13 +165,13 @@ export const eventApi = {
     if (params?.scope) searchParams.append('scope', params.scope);
     if (params?.status) searchParams.append('status', params.status);
 
-    const response = await apiClient.get(`/events?${searchParams.toString()}`);
+    const response = await axiosInstance.get(`/api/events?${searchParams.toString()}`);
     return response.data;
   },
 
   // 공개 이벤트 상세 조회 (모바일 앱용)
   async getPublicEvent(id: string): Promise<EventResponse> {
-    const response = await apiClient.get(`/events/${id}`);
+    const response = await axiosInstance.get(`/api/events/${id}`);
     return response.data;
   },
 };
