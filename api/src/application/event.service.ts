@@ -2,6 +2,7 @@ import { EventRepository } from '../infrastructure/repositories/event.repository
 import { AlertRuleRepository } from '../infrastructure/repositories/alert_rule.repository';
 import { NotificationService } from './notification.service';
 import { Event, EventLink } from '../domain/entities/event.entity';
+import { NotificationType } from '../domain/entities/notification_log.entity';
 
 export interface CreateEventRequest {
     type: 'project_announcement' | 'partnership' | 'token_listing' | 'staking_event' | 'nft_drop' | 'airdrop';
@@ -507,12 +508,12 @@ export class EventService {
         data: any;
     }): Promise<void> {
         try {
-            await this.notificationService.sendAlert({
+            await this.notificationService.sendNotification({
                 userId,
                 title: notification.title,
                 message: notification.message,
                 data: notification.data,
-                preferredType: 'push'
+                preferredType: NotificationType.FCM
             });
         } catch (error) {
             console.error(`Failed to send notification to user ${userId}:`, error);
