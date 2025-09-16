@@ -87,8 +87,8 @@ export default function EventsPage() {
         search: searchTerm || undefined,
       });
       
-      setEvents(response.data);
-      setTotalPages(response.pagination.totalPages);
+      setEvents(response.data.events);
+      setTotalPages(response.data.pagination.totalPages);
     } catch (error) {
       console.error('이벤트 목록 조회 실패:', error);
     } finally {

@@ -172,7 +172,7 @@ export class EventController {
                         page: result.page,
                         limit: result.limit,
                         total: result.total,
-                        total_pages: result.totalPages
+                        totalPages: result.totalPages
                     }
                 }
             });

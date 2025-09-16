@@ -48,12 +48,14 @@ export interface GetEventsParams {
 
 export interface GetEventsResponse {
   success: boolean;
-  data: Event[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
+  data: {
+    events: Event[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
   };
 }
 
