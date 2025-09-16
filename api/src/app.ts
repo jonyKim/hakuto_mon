@@ -77,6 +77,10 @@ import telegramRoutes from './interfaces/telegram.routes';
 
 // Scheduler imports
 import { SchedulerManager } from './infrastructure/schedulers/scheduler_manager';
+import { schedulerManager as priceSchedulerManager } from './infrastructure/schedulers/scheduler.manager';
+
+// Price System imports
+import priceRoutes from './interface/routes/price.routes';
 
 dotenv.config();
 
@@ -254,6 +258,9 @@ app.use('/api/events', eventRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/telegram', telegramRoutes);
 
+// Price System API routes
+app.use('/api/price', priceRoutes);
+
 // Scheduler management endpoints (Admin only)
 app.get('/api/admin/scheduler/status', (_req, res) => {
     try {
@@ -316,6 +323,10 @@ app.listen(PORT, '0.0.0.0', async () => {
     try {
         await schedulerManager.startAll();
         console.log('✅ 알림 시스템 스케줄러가 시작되었습니다');
+        
+        // HKTM 가격 수집 스케줄러 시작
+        await priceSchedulerManager.startAll();
+        console.log('✅ HKTM 가격 수집 스케줄러가 시작되었습니다');
     } catch (error) {
         console.error('❌ 스케줄러 시작 실패:', error);
     }
@@ -326,7 +337,8 @@ process.on('SIGTERM', async () => {
     console.log('🛑 SIGTERM 신호를 받았습니다. 서버를 종료합니다...');
     try {
         await schedulerManager.stopAll();
-        console.log('✅ 스케줄러가 정상적으로 종료되었습니다');
+        priceSchedulerManager.stopAll();
+        console.log('✅ 모든 스케줄러가 정상적으로 종료되었습니다');
         process.exit(0);
     } catch (error) {
         console.error('❌ 스케줄러 종료 중 오류:', error);
@@ -338,7 +350,8 @@ process.on('SIGINT', async () => {
     console.log('🛑 SIGINT 신호를 받았습니다. 서버를 종료합니다...');
     try {
         await schedulerManager.stopAll();
-        console.log('✅ 스케줄러가 정상적으로 종료되었습니다');
+        priceSchedulerManager.stopAll();
+        console.log('✅ 모든 스케줄러가 정상적으로 종료되었습니다');
         process.exit(0);
     } catch (error) {
         console.error('❌ 스케줄러 종료 중 오류:', error);
