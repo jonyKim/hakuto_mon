@@ -176,4 +176,10 @@ export const eventApi = {
     const response = await axiosInstance.get(`/api/events/${id}`);
     return response.data;
   },
+
+  // 이벤트 푸시 알림 발송 (어드민)
+  async sendEventNotification(eventId: string): Promise<{ success: boolean; message: string; data?: any }> {
+    const response = await axiosInstance.post(`/api/admin/events/${eventId}/send-notification`);
+    return response.data;
+  },
 };

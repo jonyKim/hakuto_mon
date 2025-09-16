@@ -152,18 +152,22 @@ export default function EventsPage() {
 
   // 푸시 알림 발송
   const handleSendNotification = async (event: Event) => {
-    if (!confirm(`"${event.title}" 이벤트에 대한 푸시 알림을 발송하시겠습니까?`)) return;
+    if (!confirm(`"${event.title}" 이벤트에 대한 푸시 알림을 모든 사용자에게 발송하시겠습니까?\n\n이 작업은 실제 사용자들에게 알림이 전송됩니다.`)) return;
 
     try {
-      const response = await eventApi.sendNotification(event.id, {
-        customMessage: event.description,
-        targetScope: event.scope,
-      });
+      console.log(`[Admin] 이벤트 푸시 알림 발송 시작: ${event.id} - ${event.title}`);
       
-      alert(`알림 발송 완료!\n성공: ${response.data.successCount}명\n실패: ${response.data.failCount}명`);
-    } catch (error) {
-      console.error('푸시 알림 발송 실패:', error);
-      alert('푸시 알림 발송에 실패했습니다.');
+      const response = await eventApi.sendEventNotification(event.id);
+      
+      if (response.success) {
+        alert(`✅ 푸시 알림 발송 완료!\n\n이벤트: ${event.title}\n상태: ${response.message}`);
+        console.log('[Admin] 푸시 알림 발송 성공:', response);
+      } else {
+        throw new Error(response.message || '알림 발송에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('[Admin] 푸시 알림 발송 실패:', error);
+      alert(`❌ 푸시 알림 발송 실패\n\n오류: ${error.response?.data?.message || error.message || '알 수 없는 오류가 발생했습니다.'}`);
     }
   };
 

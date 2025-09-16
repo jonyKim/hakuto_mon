@@ -76,6 +76,9 @@ import adminEventRoutes from './interfaces/admin_event.routes';
 import portfolioRoutes from './interfaces/portfolio.routes';
 import telegramRoutes from './interfaces/telegram.routes';
 
+// Test routes (개발/테스트용)
+import testFCMRoutes from './interfaces/test_fcm.routes';
+
 // Scheduler imports
 import { SchedulerManager } from './infrastructure/schedulers/scheduler_manager';
 import { schedulerManager as priceSchedulerManager } from './infrastructure/schedulers/scheduler.manager';
@@ -249,6 +252,7 @@ app.use('/api/admin/withdraw-stats', createWithdrawStatsRouter(withdrawStatsCont
 app.use('/api/admin/wallet-users', createAdminWalletUserRouter(adminWalletUserController));
 app.use('/api/admin/email-verification', createAdminEmailVerificationRouter(adminEmailVerificationController));
 app.use('/api/admin/events', adminEventRoutes);
+app.use('/api/admin/test', testFCMRoutes); // FCM 테스트 라우트
 
 // Public API routes
 app.use('/api/wallet-users', walletUserRoutes);

@@ -92,6 +92,18 @@ export class WalletUserRepository {
         return await this.repository.count();
     }
 
+    /**
+     * FCM 토큰이 등록된 모든 사용자 조회 (테스트용)
+     */
+    async findUsersWithFCMToken(): Promise<WalletUser[]> {
+        return await this.repository.find({
+            where: {
+                fcmToken: Not(IsNull())
+            },
+            select: ['id', 'walletAddress', 'email', 'fcmToken', 'createdAt']
+        });
+    }
+
     // 통계 관련 메서드들
     async getVerifiedUsersCount(): Promise<number> {
         return await this.repository.count({
