@@ -24,13 +24,13 @@ export interface NotificationServiceResult {
 
 export class NotificationService {
     private firebaseService: FirebaseService;
-    private emailService: EmailService;
+    private emailService: EmailService | null;
     private notificationLogRepository: NotificationLogRepository;
     private walletUserRepository: WalletUserRepository;
 
     constructor(
         firebaseService: FirebaseService,
-        emailService: EmailService,
+        emailService: EmailService | null,
         notificationLogRepository: NotificationLogRepository,
         walletUserRepository: WalletUserRepository
     ) {
@@ -184,6 +184,12 @@ export class NotificationService {
         message: string
     ): Promise<boolean> {
         try {
+            // EmailService가 없으면 false 반환
+            if (!this.emailService) {
+                console.log('[NotificationService] EmailService가 설정되지 않음, 이메일 발송 건너뜀');
+                return false;
+            }
+
             // 간단한 알림 이메일 템플릿
             return await this.emailService.sendEmail(email, {
                 subject: title,

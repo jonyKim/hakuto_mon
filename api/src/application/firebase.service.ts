@@ -23,7 +23,29 @@ export class FirebaseService {
     private app: admin.app.App | null = null;
     private initialized = false;
 
-    constructor(private config: FirebaseConfig) {}
+    constructor(private config?: FirebaseConfig) {
+        // config가 없으면 환경변수에서 자동 로드
+        if (!config) {
+            this.config = {
+                projectId: process.env.FIREBASE_PROJECT_ID!,
+                privateKey: process.env.FIREBASE_PRIVATE_KEY!,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
+            };
+        }
+    }
+
+    /**
+     * 환경변수에서 FirebaseService 인스턴스 생성 (정적 메서드)
+     */
+    static createFromEnv(): FirebaseService {
+        const config: FirebaseConfig = {
+            projectId: process.env.FIREBASE_PROJECT_ID!,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY!,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
+        };
+
+        return new FirebaseService(config);
+    }
 
     /**
      * Firebase Admin SDK 초기화

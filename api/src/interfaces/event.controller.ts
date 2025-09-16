@@ -5,7 +5,6 @@ import { AlertRuleRepository } from '../infrastructure/repositories/alert_rule.r
 import { EventRepository } from '../infrastructure/repositories/event.repository';
 import { NotificationService } from '../application/notification.service';
 import { FirebaseService } from '../application/firebase.service';
-import { EmailService } from '../application/email.service';
 import { NotificationLogRepository } from '../infrastructure/repositories/notification_log.repository';
 import { WalletUserRepository } from '../infrastructure/repositories/wallet_user.repository';
 
@@ -16,8 +15,11 @@ export class EventController {
         const eventRepository = new EventRepository();
         const alertRepository = new AlertRuleRepository();
         
-        const firebaseService = new FirebaseService();
-        const emailService = new EmailService();
+        const firebaseService = FirebaseService.createFromEnv();
+        firebaseService.initialize(); // Firebase 초기화
+        
+        // EmailService는 FCM 테스트에서 불필요하므로 null로 설정
+        const emailService = null;
         const notificationLogRepository = new NotificationLogRepository();
         const userRepository = new WalletUserRepository();
         
@@ -217,7 +219,7 @@ export class EventController {
 
             const { event_id } = req.params;
 
-            const event = await this.eventService.getEvent(event_id);
+            const event = await this.eventService.getEventById(event_id);
             if (!event) {
                 res.status(404).json({
                     success: false,
@@ -289,8 +291,7 @@ export class EventController {
                 tags
             } = req.body;
 
-            const updatedEvent = await this.eventService.updateEvent({
-                id: event_id,
+            const updatedEvent = await this.eventService.updateEvent(event_id, {
                 title,
                 description,
                 content,
@@ -586,7 +587,7 @@ export class EventController {
             }
 
             const { event_id } = req.params;
-            const { customMessage, targetScope } = req.body;
+            const { customMessage } = req.body;
 
             const event = await this.eventService.getEventById(event_id);
             if (!event) {
@@ -597,31 +598,19 @@ export class EventController {
                 return;
             }
 
-            // Event Alert를 설정한 사용자들 조회
-            const alertRuleRepository = new AlertRuleRepository();
-            const eventAlerts = await alertRuleRepository.findByType('event');
+            // FCM 토큰이 등록된 모든 wallet_users 조회 (기본 접근 방식)
+            const walletUserRepository = new WalletUserRepository();
+            const usersWithFCM = await walletUserRepository.findUsersWithFCMToken();
             
-            // 스코프에 따른 필터링
-            const filteredAlerts = eventAlerts.filter(alert => {
-                const alertScope = alert.conditions?.scope;
-                const eventScope = targetScope || event.scope;
-                
-                // 'all_projects'인 경우 모든 이벤트 수신
-                if (alertScope === 'all_projects') return true;
-                
-                // 특정 스코프가 일치하는 경우
-                return alertScope === eventScope;
-            });
-
-            console.log(`[EventController] 이벤트 알림 발송 대상: ${filteredAlerts.length}명`);
+            console.log(`[EventController] 이벤트 알림 발송 대상: ${usersWithFCM.length}명 (FCM 토큰 보유 사용자)`);
 
             // 각 사용자에게 푸시 알림 발송
-            const notificationPromises = filteredAlerts.map(async (alert) => {
+            const notificationPromises = usersWithFCM.map(async (user) => {
                 try {
                     const title = `🎉 ${event.title}`;
                     const message = customMessage || event.description || '새로운 이벤트가 등록되었습니다.';
 
-                    await this.eventService.sendNotificationToUser(alert.userId, {
+                    await this.eventService.sendNotificationToUser(user.id, {
                         title,
                         message,
                         data: {
@@ -629,16 +618,17 @@ export class EventController {
                             eventId: event.id,
                             eventType: event.type,
                             scope: event.scope,
-                            alertId: alert.id
+                            userId: user.id
                         }
                     });
 
-                    console.log(`[EventController] 알림 발송 성공: ${alert.userId}`);
-                    return { userId: alert.userId, success: true };
+                    console.log(`[EventController] 알림 발송 성공: ${user.id} (${user.email})`);
+                    return { userId: user.id, email: user.email, success: true };
                 } catch (error) {
-                    console.error(`[EventController] 알림 발송 실패 ${alert.userId}:`, error);
+                    console.error(`[EventController] 알림 발송 실패 ${user.id}:`, error);
                     return { 
-                        userId: alert.userId, 
+                        userId: user.id, 
+                        email: user.email,
                         success: false, 
                         error: error instanceof Error ? error.message : '알 수 없는 오류' 
                     };
@@ -655,7 +645,7 @@ export class EventController {
                 data: {
                     eventId: event.id,
                     eventTitle: event.title,
-                    totalTargets: filteredAlerts.length,
+                    totalTargets: usersWithFCM.length,
                     successCount,
                     failCount,
                     results
