@@ -2,6 +2,20 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { WalletUser } from './wallet_user.entity';
 import { AlertRule } from './alert_rule.entity';
 
+export enum NotificationType {
+    PRICE_TARGET = 'price_target',
+    EVENT = 'event',
+    PORTFOLIO = 'portfolio',
+    SYSTEM = 'system'
+}
+
+export enum NotificationStatus {
+    PENDING = 'pending',
+    SENT = 'sent',
+    DELIVERED = 'delivered',
+    FAILED = 'failed'
+}
+
 export interface NotificationChannel {
     type: 'push' | 'email' | 'telegram';
     status: 'sent' | 'delivered' | 'failed';
@@ -25,10 +39,10 @@ export class NotificationHistory {
 
     @Column({ 
         type: 'enum',
-        enum: ['price_target', 'event', 'portfolio', 'system']
+        enum: NotificationType
     })
     @Index()
-    type!: 'price_target' | 'event' | 'portfolio' | 'system';
+    type!: NotificationType;
 
     @Column({ length: 255 })
     title!: string;
@@ -41,11 +55,11 @@ export class NotificationHistory {
 
     @Column({ 
         type: 'enum',
-        enum: ['pending', 'sent', 'delivered', 'failed'],
-        default: 'pending'
+        enum: NotificationStatus,
+        default: NotificationStatus.PENDING
     })
     @Index()
-    status!: 'pending' | 'sent' | 'delivered' | 'failed';
+    status!: NotificationStatus;
 
     @Column({ type: 'json', nullable: true })
     metadata?: any;

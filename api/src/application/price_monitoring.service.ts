@@ -4,7 +4,7 @@ import { NotificationHistoryRepository } from '../infrastructure/repositories/no
 import { NotificationService } from './notification.service';
 import { AlertRule } from '../domain/entities/alert_rule.entity';
 import { AssetPrice } from '../domain/entities/asset_price.entity';
-import { NotificationType } from '../domain/entities/notification_history.entity';
+import { NotificationType, NotificationStatus } from '../domain/entities/notification_history.entity';
 
 interface PriceAlertCondition {
   type: 'above' | 'below' | 'change_percent';
@@ -245,7 +245,7 @@ export class PriceMonitoringService {
         title,
         message,
         channels: alert.channels,
-        status: 'sent',
+        status: NotificationStatus.SENT,
         metadata: {
           alertId: alert.id,
           currentPrice: currentPrice.priceUsd,
@@ -278,7 +278,7 @@ export class PriceMonitoringService {
         title: `🚨 HKTM 가격 알림: ${alert.name}`,
         message: reason,
         channels: alert.channels,
-        status: 'failed',
+        status: NotificationStatus.FAILED,
         errorMessage: error instanceof Error ? error.message : '알 수 없는 오류',
         metadata: { alertId: alert.id, currentPrice: currentPrice.priceUsd }
       });
