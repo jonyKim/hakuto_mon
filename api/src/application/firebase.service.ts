@@ -41,11 +41,16 @@ export class FirebaseService {
                 clientEmail: this.config.clientEmail,
             };
 
-            // Firebase Admin 초기화
-            this.app = admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount),
-                projectId: this.config.projectId,
-            });
+            // Firebase Admin 초기화 (중복 방지)
+            try {
+                this.app = admin.app(); // 기존 앱이 있으면 사용
+            } catch (error) {
+                // 기존 앱이 없으면 새로 생성
+                this.app = admin.initializeApp({
+                    credential: admin.credential.cert(serviceAccount),
+                    projectId: this.config.projectId,
+                });
+            }
 
             this.initialized = true;
             console.log('Firebase Admin SDK initialized successfully');
