@@ -1,0 +1,33 @@
+[2025-06-24 02:00:01] 🚀 Allowlist 업데이트 시작
+[2025-06-24 02:00:01] 📁 .env 파일 로드됨
+[2025-06-24 02:00:01] 🔧 Node.js 스크립트 실행 중...
+
+> guild@1.0.0 start /home/ubuntu/project/hakuto_mon/guild
+> node dist/app.js
+
+/home/ubuntu/project/hakuto_mon/guild/node_modules/uuid/dist/cjs/v1.js:28
+    state.msecs ??= -Infinity;
+                ^^^
+
+SyntaxError: Unexpected token '??='
+    at wrapSafe (internal/modules/cjs/loader.js:1029:16)
+    at Module._compile (internal/modules/cjs/loader.js:1078:27)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1143:10)
+    at Module.load (internal/modules/cjs/loader.js:979:32)
+    at Function.Module._load (internal/modules/cjs/loader.js:819:12)
+    at Module.require (internal/modules/cjs/loader.js:1003:19)
+    at require (internal/modules/cjs/helpers.js:107:18)
+    at Object.<anonymous> (/home/ubuntu/project/hakuto_mon/guild/node_modules/uuid/dist/cjs/index.js:12:15)
+    at Module._compile (internal/modules/cjs/loader.js:1114:14)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1143:10)
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! guild@1.0.0 start: `node dist/app.js`
+npm ERR! Exit status 1
+npm ERR! 
+npm ERR! Failed at the guild@1.0.0 start script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /home/ubuntu/.npm/_logs/2025-06-24T02_00_02_363Z-debug.log
+[2025-06-24 02:00:01] ❌ Allowlist 업데이트 실패
