@@ -64,19 +64,19 @@ export class EventController {
                 tags
             } = req.body;
 
-            // JWT 토큰에서 생성자 정보 추출
-            let created_by = (req as any).admin?.uuid_admin || (req as any).admin?.email_id;
+            // JWT 토큰에서 생성자 정보 추출 (admin_users.id 사용)
+            let created_by = (req as any).admin?.uuid_admin; // 실제로는 admin_users.id 값
             console.log('[EventController] JWT admin info:', (req as any).admin);
-            console.log('[EventController] Initial created_by:', created_by);
+            console.log('[EventController] Initial created_by (admin id):', created_by);
 
-            // JWT에서 나온 ID를 문자열로 변환해서 사용
-            if (created_by) {
-                created_by = String(created_by); // 숫자든 문자열이든 문자열로 변환
-                console.log('[EventController] Using created_by as string:', created_by);
+            // JWT에서 나온 ID를 숫자로 변환해서 사용
+            if (created_by && !isNaN(Number(created_by))) {
+                created_by = Number(created_by); // admin_users.id (숫자)
+                console.log('[EventController] Using created_by as number:', created_by);
             } else {
-                // JWT 정보가 없는 경우 기본값 사용
-                created_by = 'system';
-                console.log('[EventController] Using default created_by: system');
+                // JWT 정보가 없는 경우 null 사용 (nullable 필드)
+                created_by = null;
+                console.log('[EventController] Using null for created_by (no valid admin id)');
             }
 
             const event = await this.eventService.createEvent({
