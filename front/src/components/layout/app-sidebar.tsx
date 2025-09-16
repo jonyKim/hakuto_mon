@@ -25,6 +25,8 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
+  Calendar,
+  Megaphone,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -102,6 +104,11 @@ const menuItems: MenuItem[] = [
         icon: Activity,
       },
     ],
+  },
+  {
+    title: "Event Management",
+    href: "/dashboard/events",
+    icon: Calendar,
   },
   {
     title: "Notification Management",
