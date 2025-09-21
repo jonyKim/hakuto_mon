@@ -72,14 +72,46 @@ export class MexcService {
 
       const data = response.data;
       
+      // API 응답 데이터 유효성 검사
+      if (!data || !data.lastPrice) {
+        console.error('[MexcService] 유효하지 않은 API 응답:', data);
+        throw new Error('MEXC API에서 유효하지 않은 응답을 받았습니다.');
+      }
+
+      // 숫자 변환 및 유효성 검사
+      const price = parseFloat(data.lastPrice);
+      const priceChange24h = parseFloat(data.priceChange || '0');
+      const priceChangePercent24h = parseFloat(data.priceChangePercent || '0');
+      const volume24h = parseFloat(data.volume || '0');
+      const high24h = parseFloat(data.highPrice || data.lastPrice);
+      const low24h = parseFloat(data.lowPrice || data.lastPrice);
+
+      // 가격이 유효한지 확인
+      if (isNaN(price) || price <= 0) {
+        console.error('[MexcService] 유효하지 않은 가격 데이터:', {
+          lastPrice: data.lastPrice,
+          parsedPrice: price
+        });
+        throw new Error(`유효하지 않은 가격 데이터: ${data.lastPrice}`);
+      }
+
+      console.log('[MexcService] 가격 데이터 파싱 완료:', {
+        price,
+        priceChange24h,
+        priceChangePercent24h,
+        volume24h,
+        high24h,
+        low24h
+      });
+      
       return {
         symbol: 'HKTM',
-        price: parseFloat(data.lastPrice),
-        priceChange24h: parseFloat(data.priceChange),
-        priceChangePercent24h: parseFloat(data.priceChangePercent),
-        volume24h: parseFloat(data.volume),
-        high24h: parseFloat(data.highPrice),
-        low24h: parseFloat(data.lowPrice),
+        price,
+        priceChange24h,
+        priceChangePercent24h,
+        volume24h,
+        high24h,
+        low24h,
         timestamp: new Date()
       };
     } catch (error) {

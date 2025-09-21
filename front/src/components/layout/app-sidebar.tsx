@@ -54,6 +54,16 @@ const menuItems: MenuItem[] = [
     icon: LayoutDashboard,
   },
   {
+    title: "NFT Analytics",
+    href: "/dashboard/nft-analytics",
+    icon: Database,
+  },
+  {
+    title: "Token Analytics",
+    href: "/dashboard/token-analytics",
+    icon: BarChart3,
+  },
+  {
     title: "Analytics & Reports",
     icon: BarChart3,
     items: [

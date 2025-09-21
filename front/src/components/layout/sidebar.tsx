@@ -7,6 +7,8 @@ interface SidebarProps {
 export function Sidebar({ onLogout }: SidebarProps) {
   const menuItems = [
     { href: '/dashboard', label: 'Dashboard' },
+    { href: '/dashboard/nft-analytics', label: 'NFT Analytics' },
+    { href: '/dashboard/token-analytics', label: 'Token Analytics' },
     { href: '/dashboard/nft-stats', label: 'NFT Stats' },
     { href: '/dashboard/staking-stats', label: 'Staking Stats' },
     { href: '/dashboard/reward-stats', label: 'Reward Stats' },

@@ -86,6 +86,26 @@ import { schedulerManager as priceSchedulerManager } from './infrastructure/sche
 // Price System imports
 import priceRoutes from './interfaces/price.routes';
 
+// Advanced Analytics System imports
+import { MoralisService } from './infrastructure/services/moralis.service';
+import { AnalyticsRepository } from './infrastructure/repositories/analytics.repository';
+import { AdvancedAnalyticsService } from './application/advanced_analytics.service';
+import { AdvancedAnalyticsController } from './interfaces/advanced_analytics.controller';
+import { createAdvancedAnalyticsRouter } from './interfaces/advanced_analytics.routes';
+
+// NFT Analytics imports
+import { NFTAnalyticsService } from './application/nft_analytics.service';
+import { NFTAnalyticsController } from './interfaces/nft_analytics.controller';
+import { createNFTAnalyticsRouter } from './interfaces/nft_analytics.routes';
+
+// Token Analytics imports
+import { TokenAnalyticsService } from './application/token_analytics.service';
+import { TokenAnalyticsController } from './interfaces/token_analytics.controller';
+import { createTokenAnalyticsRouter } from './interfaces/token_analytics.routes';
+
+// Token Monitoring imports
+import { TokenMonitoringScheduler } from './infrastructure/schedulers/token_monitoring.scheduler';
+
 dotenv.config();
 
 const app = express();
@@ -242,6 +262,21 @@ const schedulerManager = new SchedulerManager(
 
 console.log('Alert System initialized successfully');
 
+// Advanced Analytics System dependencies
+const moralisService = new MoralisService({
+    apiKey: process.env.MORALIS_API_KEY || ''
+});
+const analyticsRepository = new AnalyticsRepository();
+const advancedAnalyticsService = new AdvancedAnalyticsService(analyticsRepository, moralisService);
+const advancedAnalyticsController = new AdvancedAnalyticsController(advancedAnalyticsService);
+
+// NFT Analytics System dependencies
+const nftAnalyticsService = new NFTAnalyticsService();
+const nftAnalyticsController = new NFTAnalyticsController(nftAnalyticsService);
+
+console.log('Advanced Analytics System initialized successfully');
+console.log('NFT Analytics System initialized successfully');
+
 // Admin routers
 app.use('/api/admin/auth', createAuthRouter(adminAuthController));
 app.use('/api/admin/dashboard', createDashboardRouter(dashboardController));
@@ -266,6 +301,15 @@ app.use('/api/telegram', telegramRoutes);
 
 // Price System API routes
 app.use('/api/price', priceRoutes);
+
+// V2 Advanced Analytics API routes
+app.use('/api/v2/analytics', createAdvancedAnalyticsRouter(advancedAnalyticsController));
+
+// NFT Analytics API routes
+app.use('/api/nft-analytics', createNFTAnalyticsRouter(nftAnalyticsController));
+
+// Token Analytics API routes
+app.use('/api/token-analytics', createTokenAnalyticsRouter());
 
 // Scheduler management endpoints (Admin only)
 app.get('/api/admin/scheduler/status', (_req, res) => {
@@ -321,6 +365,9 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 const PORT = Number(process.env.PORT) || 3001;
 
+// Token Monitoring Scheduler 초기화
+//const tokenMonitoringScheduler = new TokenMonitoringScheduler();
+
 // 서버 시작 및 스케줄러 초기화
 app.listen(PORT, '0.0.0.0', async () => {
     console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다`);
@@ -333,6 +380,10 @@ app.listen(PORT, '0.0.0.0', async () => {
         // HKTM 가격 수집 스케줄러 시작
         await priceSchedulerManager.startAll();
         console.log('✅ HKTM 가격 수집 스케줄러가 시작되었습니다');
+        
+        // Token Monitoring 스케줄러 시작
+        //tokenMonitoringScheduler.start();
+        //console.log('✅ HKTM 토큰 모니터링 스케줄러가 시작되었습니다');
     } catch (error) {
         console.error('❌ 스케줄러 시작 실패:', error);
     }

@@ -23,19 +23,33 @@ export class PriceCollectionService {
         volume: priceData.volume24h
       });
 
-      // 데이터베이스에 저장
-      const assetPrice = await this.assetPriceRepository.upsertPrice({
+      // 가격 데이터 유효성 검사
+      if (!priceData.price || isNaN(priceData.price) || priceData.price <= 0) {
+        console.warn('[PriceCollection] 유효하지 않은 가격 데이터, 저장 건너뜀:', {
+          price: priceData.price,
+          isNaN: isNaN(priceData.price)
+        });
+        return null;
+      }
+
+      // 추가 데이터 유효성 검사
+      const validPriceData = {
         symbol: priceData.symbol,
-        priceUsd: priceData.price,
-        priceChange24h: priceData.priceChange24h,
-        priceChangePercent24h: priceData.priceChangePercent24h,
-        volume24h: priceData.volume24h,
-        high24h: priceData.high24h,
-        low24h: priceData.low24h,
+        priceUsd: isNaN(priceData.price) ? 0 : priceData.price,
+        priceChange24h: isNaN(priceData.priceChange24h) ? 0 : priceData.priceChange24h,
+        priceChangePercent24h: isNaN(priceData.priceChangePercent24h) ? 0 : priceData.priceChangePercent24h,
+        volume24h: isNaN(priceData.volume24h) ? 0 : priceData.volume24h,
+        high24h: isNaN(priceData.high24h) ? priceData.price : priceData.high24h,
+        low24h: isNaN(priceData.low24h) ? priceData.price : priceData.low24h,
         exchange: 'MEXC',
         lastUpdatedAt: priceData.timestamp,
         createdAt: new Date()
-      });
+      };
+
+      console.log('[PriceCollection] 정제된 가격 데이터:', validPriceData);
+
+      // 데이터베이스에 저장
+      const assetPrice = await this.assetPriceRepository.upsertPrice(validPriceData);
 
       console.log('[PriceCollection] 가격 데이터 저장 완료:', assetPrice.id);
       return assetPrice;
@@ -74,9 +88,8 @@ export class PriceCollectionService {
       // 최근 5분 이내에 데이터가 있는지 확인
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
       const isRecentDataAvailable = latestPrice && latestPrice.createdAt > fiveMinutesAgo;
-
       return {
-        isHealthy: mexcApiStatus && isRecentDataAvailable,
+        isHealthy: mexcApiStatus && (isRecentDataAvailable ?? false),
         lastCollection: latestPrice?.createdAt,
         mexcApiStatus,
         errorMessage: !mexcApiStatus ? 'MEXC API 연결 실패' : 
