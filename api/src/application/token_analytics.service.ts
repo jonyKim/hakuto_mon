@@ -163,7 +163,7 @@ export class TokenAnalyticsService {
         token_version as tokenVersion,
         from_address as fromAddress,
         to_address as toAddress,
-        quantity_numeric / POW(10, CASE WHEN token_version = 'v1' THEN 4 ELSE 18 END) as quantityFormatted,
+        quantity_numeric as quantityFormatted,
         method,
         is_transfer as isTransfer,
         is_swap as isSwap,
@@ -284,7 +284,7 @@ export class TokenAnalyticsService {
         token_version as tokenVersion,
         COUNT(DISTINCT CASE WHEN to_address != '0x0000000000000000000000000000000000000000' THEN to_address END) as totalHolders,
         COUNT(*) as totalTransactions,
-        SUM(quantity_numeric / POW(10, CASE WHEN token_version = 'v1' THEN 4 ELSE 18 END)) as totalVolume,
+        SUM(quantity_numeric) as totalVolume,
         COUNT(DISTINCT CASE WHEN is_mint = FALSE AND to_address != '0x0000000000000000000000000000000000000000' THEN to_address END) as newHolders,
         COUNT(DISTINCT CASE WHEN from_address != '0x0000000000000000000000000000000000000000' OR to_address != '0x0000000000000000000000000000000000000000' THEN COALESCE(from_address, to_address) END) as activeHolders
       FROM token_transactions 
