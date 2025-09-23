@@ -1,6 +1,6 @@
-import { Repository, Between, In } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { AppDataSource } from '../database';
-import { NotificationHistory } from '../../domain/entities/notification_history.entity';
+import { NotificationHistory, NotificationStatus, NotificationType } from '../../domain/entities/notification_history.entity';
 
 export class NotificationHistoryRepository {
     private repository: Repository<NotificationHistory>;
@@ -47,7 +47,7 @@ export class NotificationHistoryRepository {
         });
     }
 
-    async findByStatus(status: 'pending' | 'sent' | 'delivered' | 'failed'): Promise<NotificationHistory[]> {
+    async findByStatus(status: NotificationStatus): Promise<NotificationHistory[]> {
         return await this.repository.find({
             where: { status },
             relations: ['user', 'alert'],
@@ -91,7 +91,7 @@ export class NotificationHistoryRepository {
 
     async findPendingNotifications(): Promise<NotificationHistory[]> {
         return await this.repository.find({
-            where: { status: 'pending' },
+            where: { status: NotificationStatus.PENDING },
             relations: ['user', 'alert'],
             order: { createdAt: 'ASC' }
         });
@@ -99,7 +99,7 @@ export class NotificationHistoryRepository {
 
     async findFailedNotifications(): Promise<NotificationHistory[]> {
         return await this.repository.find({
-            where: { status: 'failed' },
+            where: { status: NotificationStatus.FAILED },
             relations: ['user', 'alert'],
             order: { createdAt: 'DESC' }
         });
@@ -117,7 +117,7 @@ export class NotificationHistoryRepository {
 
     async updateStatus(
         id: string, 
-        status: 'pending' | 'sent' | 'delivered' | 'failed',
+        status: NotificationStatus,
         errorMessage?: string
     ): Promise<NotificationHistory | null> {
         const updateData: any = { status };
@@ -135,15 +135,15 @@ export class NotificationHistoryRepository {
     }
 
     async markAsSent(id: string): Promise<NotificationHistory | null> {
-        return await this.updateStatus(id, 'sent');
+        return await this.updateStatus(id, NotificationStatus.SENT);
     }
 
     async markAsDelivered(id: string): Promise<NotificationHistory | null> {
-        return await this.updateStatus(id, 'delivered');
+        return await this.updateStatus(id, NotificationStatus.DELIVERED);
     }
 
     async markAsFailed(id: string, errorMessage: string): Promise<NotificationHistory | null> {
-        return await this.updateStatus(id, 'failed', errorMessage);
+        return await this.updateStatus(id, NotificationStatus.FAILED, errorMessage);
     }
 
     async delete(id: string): Promise<void> {
@@ -177,13 +177,13 @@ export class NotificationHistoryRepository {
         });
     }
 
-    async countByStatus(status: 'pending' | 'sent' | 'delivered' | 'failed'): Promise<number> {
+    async countByStatus(status: NotificationStatus): Promise<number> {
         return await this.repository.count({
             where: { status }
         });
     }
 
-    async countByType(type: 'price_target' | 'event' | 'portfolio' | 'system'): Promise<number> {
+    async countByType(type: NotificationType): Promise<number> {
         return await this.repository.count({
             where: { type }
         });

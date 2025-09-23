@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { PriceController } from './price.controller';
-import { authenticateAdmin, requireAdminGrade, authenticateApiKey } from './auth.middleware';
+import { authenticateAdmin, requireAdminGrade } from './auth.middleware';
 
 const router = Router();
 const priceController = new PriceController();

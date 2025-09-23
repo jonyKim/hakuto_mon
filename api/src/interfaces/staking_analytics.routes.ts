@@ -24,7 +24,9 @@ export function createStakingAnalyticsRouter(): Router {
   router.get('/collections/activity', (req, res) => controller.getCollectionActivity(req, res));
 
   // 스테이커 상세 정보 조회
-  router.get('/stakers/:address', (req, res) => controller.getStakerDetails(req, res));
+  router.get('/stakers/:address', async (req, res) => {
+    await controller.getStakerDetails(req, res);
+  });
 
   return router;
 }

@@ -21,7 +21,9 @@ export function createStakingRewardsRouter(): Router {
   router.get('/transactions', (req, res) => controller.getRecentRewardTransactions(req, res));
 
   // 스테이커별 보상 상세 정보 조회
-  router.get('/stakers/:address', (req, res) => controller.getStakerRewardDetails(req, res));
+  router.get('/stakers/:address', async (req, res) => {
+    await controller.getStakerRewardDetails(req, res);
+  });
 
   return router;
 }

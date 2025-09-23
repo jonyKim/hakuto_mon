@@ -408,10 +408,10 @@ export class WalletUserController {
                 success: true,
                 message: 'FCM 토큰이 성공적으로 업데이트되었습니다.',
                 data: {
-                    id: updatedUser.id,
-                    wallet_address: updatedUser.walletAddress,
+                    id: updatedUser?.id,
+                    wallet_address: updatedUser?.walletAddress,
                     fcm_token_updated: true,
-                    updated_at: updatedUser.updatedAt
+                    updated_at: updatedUser?.updatedAt
                 }
             });
 
@@ -459,10 +459,10 @@ export class WalletUserController {
                 success: true,
                 message: 'FCM 토큰이 성공적으로 업데이트되었습니다.',
                 data: {
-                    id: updatedUser.id,
-                    wallet_address: updatedUser.walletAddress,
+                    id: updatedUser?.id,
+                    wallet_address: updatedUser?.walletAddress,
                     fcm_token_updated: true,
-                    updated_at: updatedUser.updatedAt
+                    updated_at: updatedUser?.updatedAt
                 }
             });
 

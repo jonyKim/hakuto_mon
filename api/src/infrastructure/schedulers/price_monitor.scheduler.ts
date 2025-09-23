@@ -102,7 +102,7 @@ export class PriceMonitorScheduler {
         
         // 모든 cron job 중지
         cron.getTasks().forEach((task) => {
-            task.destroy();
+            task.stop();
         });
 
         console.log('Price monitor scheduler stopped');
@@ -195,66 +195,66 @@ export class PriceMonitorScheduler {
     /**
      * 외부 API에서 실제 가격 데이터 조회 (MEXC API 예시)
      */
-    private async fetchRealPriceFromMEXC(symbol: string): Promise<PriceData | null> {
-        try {
-            // MEXC API 호출 예시
-            const response = await fetch(`https://api.mexc.com/api/v3/ticker/24hr?symbol=${symbol}USDT`);
+    // private async fetchRealPriceFromMEXC(symbol: string): Promise<PriceData | null> {
+    //     try {
+    //         // MEXC API 호출 예시
+    //         const response = await fetch(`https://api.mexc.com/api/v3/ticker/24hr?symbol=${symbol}USDT`);
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
 
-            const data = await response.json();
+    //         const data = await response.json();
 
-            return {
-                symbol,
-                price: parseFloat(data.lastPrice),
-                change24h: parseFloat(data.priceChange),
-                changePercent24h: parseFloat(data.priceChangePercent),
-                volume24h: parseFloat(data.volume),
-                lastUpdated: new Date()
-            };
+    //         return {
+    //             symbol,
+    //             price: parseFloat((data as any).lastPrice),
+    //             change24h: parseFloat((data as any).priceChange),
+    //             changePercent24h: parseFloat((data as any).priceChangePercent), 
+    //             volume24h: parseFloat((data as any).volume),
+    //             lastUpdated: new Date()
+    //         };
 
-        } catch (error) {
-            console.error(`Error fetching real price for ${symbol}:`, error);
-            return null;
-        }
-    }
+    //     } catch (error) {
+    //         console.error(`Error fetching real price for ${symbol}:`, error);
+    //         return null;
+    //     }
+    // }
 
     /**
      * CoinGecko API에서 가격 데이터 조회
      */
-    private async fetchRealPriceFromCoinGecko(coinId: string): Promise<PriceData | null> {
-        try {
-            const response = await fetch(
-                `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`
-            );
+    // private async fetchRealPriceFromCoinGecko(coinId: string): Promise<PriceData | null> {
+    //     try {
+    //         const response = await fetch(
+    //             `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`
+    //         );
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
 
-            const data = await response.json();
-            const coinData = data[coinId];
+    //         const data = await response.json();
+    //         const coinData = data[coinId];
 
-            if (!coinData) {
-                throw new Error(`No data found for ${coinId}`);
-            }
+    //         if (!coinData) {
+    //             throw new Error(`No data found for ${coinId}`);
+    //         }
 
-            return {
-                symbol: coinId.toUpperCase(),
-                price: coinData.usd,
-                change24h: coinData.usd * (coinData.usd_24h_change / 100),
-                changePercent24h: coinData.usd_24h_change,
-                volume24h: coinData.usd_24h_vol || 0,
-                lastUpdated: new Date()
-            };
+    //         return {
+    //             symbol: coinId.toUpperCase(),
+    //             price: coinData.usd,
+    //             change24h: coinData.usd * (coinData.usd_24h_change / 100),
+    //             changePercent24h: coinData.usd_24h_change,
+    //             volume24h: coinData.usd_24h_vol || 0,
+    //             lastUpdated: new Date()
+    //         };
 
-        } catch (error) {
-            console.error(`Error fetching CoinGecko price for ${coinId}:`, error);
-            return null;
-        }
-    }
+    //     } catch (error) {
+    //         console.error(`Error fetching CoinGecko price for ${coinId}:`, error);
+    //         return null;
+    //     }
+    // }
 
     /**
      * 스케줄러 상태 확인

@@ -1,4 +1,4 @@
-import { Repository, DataSource, Between, MoreThan } from 'typeorm';
+import { Repository, Between, MoreThan } from 'typeorm';
 import { AssetPrice } from '../../domain/entities/asset_price.entity';
 import { AppDataSource } from '../database';
 

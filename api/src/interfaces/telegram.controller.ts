@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { body, param, query, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { TelegramService } from '../application/telegram.service';
 import { TelegramConnectionRepository } from '../infrastructure/repositories/telegram_connection.repository';
 import { WalletUserRepository } from '../infrastructure/repositories/wallet_user.repository';
@@ -292,7 +292,7 @@ export class TelegramController {
             if (update.message) {
                 const chatId = update.message.chat.id.toString();
                 const text = update.message.text;
-                const username = update.message.from?.username;
+                //const username = update.message.from?.username;
 
                 if (text?.startsWith('/')) {
                     // 명령어 처리

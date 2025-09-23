@@ -21,7 +21,9 @@ export function createSwapAnalyticsRouter(): Router {
   router.get('/distribution', (req, res) => controller.getSwapDistribution(req, res));
 
   // SWAP 사용자 상세 정보 조회
-  router.get('/swappers/:address', (req, res) => controller.getSwapperDetails(req, res));
+  router.get('/swappers/:address', async (req, res) => {
+    await controller.getSwapperDetails(req, res);
+  });
 
   return router;
 }

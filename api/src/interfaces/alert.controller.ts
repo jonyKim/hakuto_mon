@@ -12,6 +12,8 @@ import { WalletUserRepository } from '../infrastructure/repositories/wallet_user
 import { FirebaseService } from '../application/firebase.service';
 import { EmailService } from '../application/email.service';
 
+import { config } from 'dotenv';
+
 export class AlertController {
     private alertService: AlertService;
 
@@ -25,7 +27,7 @@ export class AlertController {
         const userRepository = new WalletUserRepository();
         
         const firebaseService = new FirebaseService();
-        const emailService = new EmailService();
+        const emailService = new EmailService(config as any);
         const notificationService = new NotificationService(
             firebaseService,
             emailService,

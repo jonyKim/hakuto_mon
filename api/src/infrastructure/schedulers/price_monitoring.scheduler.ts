@@ -3,7 +3,6 @@ import { PriceMonitoringService } from '../../application/price_monitoring.servi
 import { AssetPriceRepository } from '../repositories/asset_price.repository';
 import { AlertRuleRepository } from '../repositories/alert_rule.repository';
 import { NotificationHistoryRepository } from '../repositories/notification_history.repository';
-import { NotificationService } from '../../application/notification.service';
 
 export class PriceMonitoringScheduler {
   private priceMonitoringService: PriceMonitoringService;
@@ -24,13 +23,11 @@ export class PriceMonitoringScheduler {
     const assetPriceRepository = new AssetPriceRepository();
     const alertRuleRepository = new AlertRuleRepository();
     const notificationHistoryRepository = new NotificationHistoryRepository();
-    const notificationService = new NotificationService();
-    
+     
     this.priceMonitoringService = new PriceMonitoringService(
       assetPriceRepository,
       alertRuleRepository,
-      notificationHistoryRepository,
-      notificationService
+      notificationHistoryRepository
     );
   }
 
@@ -131,7 +128,15 @@ export class PriceMonitoringScheduler {
    */
   getStatus(): {
     isRunning: boolean;
-    stats: typeof this.stats;
+    stats: {
+      totalRuns: number;
+      successfulRuns: number;
+      failedRuns: number;
+      alertsTriggered: number;
+      lastRun: Date | null;
+      lastSuccess: Date | null;
+      lastError: string | null;
+    };
     nextRun?: Date;
     successRate: number;
   } {

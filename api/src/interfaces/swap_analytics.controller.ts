@@ -9,7 +9,7 @@ export class SwapAnalyticsController {
   }
 
   // SWAP 요약 통계
-  async getSwapSummary(req: Request, res: Response) {
+  async getSwapSummary(_req: Request, res: Response) {
     try {
       const summary = await this.swapAnalyticsService.getSwapSummary();
       
@@ -112,7 +112,7 @@ export class SwapAnalyticsController {
   }
 
   // SWAP 사용자 상세 정보 조회
-  async getSwapperDetails(req: Request, res: Response) {
+  async getSwapperDetails(req: Request, res: Response): Promise<any> {
     try {
       const { address } = req.params;
       

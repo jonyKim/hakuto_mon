@@ -58,9 +58,9 @@ export class FirebaseService {
         try {
             // 서비스 계정 키 정보 설정
             const serviceAccount = {
-                projectId: this.config.projectId,
-                privateKey: this.config.privateKey.replace(/\\n/g, '\n'),
-                clientEmail: this.config.clientEmail,
+                projectId: this.config?.projectId || '',
+                privateKey: this.config?.privateKey?.replace(/\\n/g, '\n') || '',
+                clientEmail: this.config?.clientEmail || '',
             };
 
             // Firebase Admin 초기화 (중복 방지)
@@ -70,7 +70,7 @@ export class FirebaseService {
                 // 기존 앱이 없으면 새로 생성
                 this.app = admin.initializeApp({
                     credential: admin.credential.cert(serviceAccount),
-                    projectId: this.config.projectId,
+                    projectId: this.config?.projectId || '',
                 });
             }
 

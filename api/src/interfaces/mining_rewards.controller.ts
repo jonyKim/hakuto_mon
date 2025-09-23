@@ -9,7 +9,7 @@ export class MiningRewardsController {
   }
 
   // 마이닝 보상 요약 통계
-  async getMiningRewardSummary(req: Request, res: Response) {
+  async getMiningRewardSummary(_req: Request, res: Response) {
     try {
       const summary = await this.miningRewardsService.getMiningRewardSummary();
       
@@ -50,7 +50,7 @@ export class MiningRewardsController {
   }
 
   // 특정 마이너 상세 정보
-  async getMinerDetails(req: Request, res: Response) {
+  async getMinerDetails(req: Request, res: Response): Promise<any> {
     try {
       const { address } = req.params;
       
@@ -107,7 +107,7 @@ export class MiningRewardsController {
   }
 
   // 컨트랙트별 마이닝 통계
-  async getContractMiningStats(req: Request, res: Response) {
+  async getContractMiningStats(_req: Request, res: Response) {
     try {
       const stats = await this.miningRewardsService.getContractMiningStats();
       
@@ -148,7 +148,7 @@ export class MiningRewardsController {
   }
 
   // 보상 완료율 분석
-  async getRewardCompletionAnalysis(req: Request, res: Response) {
+  async getRewardCompletionAnalysis(_req: Request, res: Response) {
     try {
       const analysis = await this.miningRewardsService.getRewardCompletionAnalysis();
       

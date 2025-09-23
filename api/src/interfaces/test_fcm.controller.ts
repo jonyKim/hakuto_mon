@@ -29,7 +29,7 @@ export class TestFCMController {
         this.notificationService = new NotificationService(
             firebaseService,
             null, // emailService는 테스트에서 불필요
-            notificationHistoryRepository,
+            notificationHistoryRepository as any, // Type assertion to fix type mismatch
             this.walletUserRepository
         );
     }
@@ -71,8 +71,8 @@ export class TestFCMController {
                 return;
             }
 
-            // FCM 알림 발송
-            const result = await this.notificationService.sendAlert({
+            // FCM 알림 발송 (sendAlert 메서드가 없으므로 sendNotification 사용)
+            const result = await this.notificationService.sendNotification({
                 userId: user_id,
                 title,
                 message,
@@ -81,7 +81,7 @@ export class TestFCMController {
                     timestamp: new Date().toISOString(),
                     ...data
                 },
-                preferredType: 'push'
+                preferredType: 'push' as any
             });
 
             console.log(`[TestFCM] 알림 발송 결과:`, result);
@@ -138,7 +138,7 @@ export class TestFCMController {
             const results = [];
             for (const user of users) {
                 try {
-                    const result = await this.notificationService.sendAlert({
+                    const result = await this.notificationService.sendNotification({
                         userId: user.id,
                         title,
                         message,
@@ -147,10 +147,10 @@ export class TestFCMController {
                             timestamp: new Date().toISOString(),
                             ...data
                         },
-                        preferredType: 'push'
+                        preferredType: 'push' as any
                     });
                     results.push({ userId: user.id, success: true, result });
-                } catch (error) {
+                } catch (error: any) {
                     results.push({ userId: user.id, success: false, error: error.message });
                 }
             }

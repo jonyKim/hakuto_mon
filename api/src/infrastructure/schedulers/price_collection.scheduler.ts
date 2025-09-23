@@ -109,7 +109,14 @@ export class PriceCollectionScheduler {
    */
   getStatus(): {
     isRunning: boolean;
-    stats: typeof this.stats;
+    stats: {
+      totalRuns: number;
+      successfulRuns: number;
+      failedRuns: number;
+      lastRun: Date | null;
+      lastSuccess: Date | null;
+      lastError: string | null;
+    };
     nextRun?: Date;
   } {
     let nextRun: Date | undefined;

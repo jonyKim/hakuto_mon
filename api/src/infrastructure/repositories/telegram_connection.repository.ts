@@ -103,8 +103,8 @@ export class TelegramConnectionRepository {
                 username,
                 isActive: true,
                 connectedAt: new Date(),
-                connectionCode: null, // 코드 사용 완료
-                codeExpiresAt: null,
+                connectionCode: undefined, // 코드 사용 완료
+                codeExpiresAt: undefined,
                 lastMessageAt: new Date()
             });
             
@@ -119,8 +119,8 @@ export class TelegramConnectionRepository {
             { userId },
             { 
                 isActive: false,
-                connectionCode: null,
-                codeExpiresAt: null
+                connectionCode: undefined,
+                codeExpiresAt: undefined
             }
         );
     }
@@ -143,12 +143,12 @@ export class TelegramConnectionRepository {
     async cleanupExpiredCodes(): Promise<void> {
         await this.repository.update(
             {
-                connectionCode: null,
-                codeExpiresAt: null
+                connectionCode: undefined,
+                codeExpiresAt: undefined
             },
             {
-                connectionCode: null,
-                codeExpiresAt: null
+                connectionCode: undefined,
+                codeExpiresAt: undefined
             }
         );
     }
@@ -181,8 +181,8 @@ export class TelegramConnectionRepository {
         
         const pendingCodes = await this.repository.count({
             where: {
-                connectionCode: null, // NOT NULL 조건
-                codeExpiresAt: null,  // NOT NULL 조건
+                connectionCode: undefined, // NOT NULL 조건
+                codeExpiresAt: undefined,  // NOT NULL 조건
                 isActive: false
             }
         });

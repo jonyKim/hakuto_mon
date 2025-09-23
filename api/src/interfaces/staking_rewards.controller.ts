@@ -9,7 +9,7 @@ export class StakingRewardsController {
   }
 
   // 스테이킹 보상 요약 통계
-  async getStakingRewardSummary(req: Request, res: Response) {
+  async getStakingRewardSummary(_req: Request, res: Response) {
     try {
       const summary = await this.stakingRewardsService.getStakingRewardSummary();
       
@@ -29,7 +29,7 @@ export class StakingRewardsController {
   }
 
   // 스테이커별 보상 상세 정보
-  async getStakerRewardDetails(req: Request, res: Response) {
+  async getStakerRewardDetails(req: Request, res: Response): Promise<any> {
     try {
       const { address } = req.params;
       
@@ -107,7 +107,7 @@ export class StakingRewardsController {
   }
 
   // 컬렉션별 보상 통계 조회
-  async getCollectionRewardStats(req: Request, res: Response) {
+  async getCollectionRewardStats(_req: Request, res: Response) {
     try {
       const stats = await this.stakingRewardsService.getCollectionRewardStats();
       

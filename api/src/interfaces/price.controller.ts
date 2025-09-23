@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AssetPriceRepository } from '../infrastructure/repositories/asset_price.repository';
 import { PriceCollectionService } from '../application/price_collection.service';
-import { PriceMonitoringService } from '../application/price_monitoring.service';
+// import { PriceMonitoringService } from '../application/price_monitoring.service';
 import { MexcService } from '../infrastructure/services/mexc.service';
 import { schedulerManager } from '../infrastructure/schedulers/scheduler.manager';
 
@@ -23,7 +23,7 @@ export class PriceController {
    * HKTM 현재 가격 조회
    * GET /api/price/hktm/current
    */
-  async getCurrentHktmPrice(req: Request, res: Response): Promise<void> {
+  async getCurrentHktmPrice(_req: Request, res: Response): Promise<void> {
     try {
       const latestPrice = await this.assetPriceRepository.getLatestPrice('HKTM', 'MEXC');
       
@@ -169,7 +169,7 @@ export class PriceController {
    * 수동 가격 업데이트
    * POST /api/price/hktm/update
    */
-  async manualPriceUpdate(req: Request, res: Response): Promise<void> {
+  async manualPriceUpdate(_req: Request, res: Response): Promise<void> {
     try {
       console.log('[PriceController] 수동 가격 업데이트 요청');
 
@@ -213,7 +213,7 @@ export class PriceController {
    * 가격 수집 상태 조회
    * GET /api/price/collection/status
    */
-  async getCollectionStatus(req: Request, res: Response): Promise<void> {
+  async getCollectionStatus(_req: Request, res: Response): Promise<void> {
     try {
       const health = await this.priceCollectionService.checkCollectionHealth();
       const stats = await this.priceCollectionService.getCollectionStats(24);
@@ -253,7 +253,7 @@ export class PriceController {
    * 스케줄러 상태 조회
    * GET /api/price/scheduler/status
    */
-  async getSchedulerStatus(req: Request, res: Response): Promise<void> {
+  async getSchedulerStatus(_req: Request, res: Response): Promise<void> {
     try {
       const status = schedulerManager.getOverallStatus();
       const health = await schedulerManager.healthCheck();
@@ -320,7 +320,7 @@ export class PriceController {
    * MEXC API 상태 확인
    * GET /api/price/mexc/status
    */
-  async getMexcApiStatus(req: Request, res: Response): Promise<void> {
+  async getMexcApiStatus(_req: Request, res: Response): Promise<void> {
     try {
       const configuration = this.mexcService.getConfiguration();
       const isHealthy = await this.mexcService.checkApiHealth();

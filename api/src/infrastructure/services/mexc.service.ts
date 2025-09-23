@@ -55,6 +55,22 @@ export class MexcService {
     });
   }
 
+  getConfiguration(): {
+    baseUrl: string;
+    symbol: string;
+    hasApiKey: boolean;
+    hasApiSecret: boolean;
+    hasApiCredentials: boolean;
+  } {
+    return {
+      baseUrl: this.baseUrl,
+      symbol: this.hktmSymbol,
+      hasApiKey: !!this.apiKey,
+      hasApiSecret: !!this.apiSecret,
+      hasApiCredentials: !!(this.apiKey && this.apiSecret)
+    };
+  }
+
   /**
    * HKTM/USDT 현재 가격 정보 조회
    */
@@ -123,41 +139,41 @@ export class MexcService {
   /**
    * Private API 호출을 위한 인증 헤더 생성 (향후 사용)
    */
-  private createAuthHeaders(timestamp: number, method: string, endpoint: string, params?: string): any {
-    if (!this.apiKey || !this.apiSecret) {
-      throw new Error('API 키 또는 시크릿이 설정되지 않았습니다.');
-    }
+  // private _createAuthHeaders(timestamp: number, method: string, endpoint: string, params?: string): any {
+  //   if (!this.apiKey || !this.apiSecret) {
+  //     throw new Error('API 키 또는 시크릿이 설정되지 않았습니다.');
+  //   }
 
-    // MEXC API 서명 생성 로직 (필요시 구현)
-    const crypto = require('crypto');
-    const queryString = params || '';
-    const signature = crypto
-      .createHmac('sha256', this.apiSecret)
-      .update(`${timestamp}${method}${endpoint}${queryString}`)
-      .digest('hex');
+  //   // MEXC API 서명 생성 로직 (필요시 구현)
+  //   const crypto = require('crypto');
+  //   const queryString = params || '';
+  //   const signature = crypto
+  //     .createHmac('sha256', this.apiSecret)
+  //     .update(`${timestamp}${method}${endpoint}${queryString}`)
+  //     .digest('hex');
 
-    return {
-      'X-MEXC-APIKEY': this.apiKey,
-      'X-MEXC-TIMESTAMP': timestamp.toString(),
-      'X-MEXC-SIGNATURE': signature,
-      'Content-Type': 'application/json'
-    };
-  }
+  //   return {
+  //     'X-MEXC-APIKEY': this.apiKey,
+  //     'X-MEXC-TIMESTAMP': timestamp.toString(),
+  //     'X-MEXC-SIGNATURE': signature,
+  //     'Content-Type': 'application/json'
+  //   };
+  // }
 
-  /**
-   * 환경 변수 설정 상태 확인
-   */
-  getConfiguration(): {
-    baseUrl: string;
-    symbol: string;
-    hasApiCredentials: boolean;
-  } {
-    return {
-      baseUrl: this.baseUrl,
-      symbol: this.hktmSymbol,
-      hasApiCredentials: !!(this.apiKey && this.apiSecret)
-    };
-  }
+  // /**
+  //  * 환경 변수 설정 상태 확인
+  //  */
+  // getConfiguration(): {
+  //   baseUrl: string;
+  //   symbol: string;
+  //   hasApiCredentials: boolean;
+  // } {
+  //   return {
+  //     baseUrl: this.baseUrl,
+  //     symbol: this.hktmSymbol,
+  //     hasApiCredentials: !!(this.apiKey && this.apiSecret)
+  //   };
+  // }
 
   /**
    * MEXC API 연결 상태 확인

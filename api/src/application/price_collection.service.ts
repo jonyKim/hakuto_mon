@@ -1,4 +1,4 @@
-import { MexcService, HktmPriceData } from '../infrastructure/services/mexc.service';
+import { MexcService } from '../infrastructure/services/mexc.service';
 import { AssetPriceRepository } from '../infrastructure/repositories/asset_price.repository';
 import { AssetPrice } from '../domain/entities/asset_price.entity';
 

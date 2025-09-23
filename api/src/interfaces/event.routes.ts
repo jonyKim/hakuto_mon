@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { EventController, validateCreateEvent, validateUpdateEvent, validateEventId, validateGetEvents, validatePopularEvents, validateSendNotification } from './event.controller';
-import { authenticateAdmin, requireAdminGrade, authenticateApiKey } from './auth.middleware';
+import { EventController, validateEventId, validateGetEvents, validatePopularEvents } from './event.controller';
+import { authenticateApiKey } from './auth.middleware';
 
 const router = Router();
 const eventController = new EventController();

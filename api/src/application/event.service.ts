@@ -84,7 +84,7 @@ export class EventService {
                 images: request.images || [],
                 links: request.links || [],
                 tags: request.tags || [],
-                createdBy: request.createdBy,
+                createdBy: request.createdBy ? parseInt(request.createdBy.toString()) : undefined,
                 status: 'upcoming'
             });
 
@@ -464,7 +464,7 @@ export class EventService {
     /**
      * 알림 조건과 이벤트 매칭 확인
      */
-    private shouldNotifyForEvent(alert: AlertRule, event: Event): boolean {
+    private shouldNotifyForEvent(_alert: any, _event: Event): boolean {
         // 알림 조건에서 이벤트 범위 확인
         // 실제 구현에서는 더 복잡한 매칭 로직 필요
         return true; // 임시로 모든 이벤트에 대해 알림

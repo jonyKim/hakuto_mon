@@ -24,7 +24,9 @@ export function createMiningRewardsRouter(): Router {
   router.get('/completion-analysis', (req, res) => controller.getRewardCompletionAnalysis(req, res));
 
   // 특정 마이너 상세 정보
-  router.get('/miners/:address', (req, res) => controller.getMinerDetails(req, res));
+  router.get('/miners/:address', async (req, res) => {
+    await controller.getMinerDetails(req, res);
+  });
 
   return router;
 }

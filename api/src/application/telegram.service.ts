@@ -254,8 +254,8 @@ export class TelegramService {
             
             for (const connection of expiredConnections) {
                 await this.telegramRepository.update(connection.id, {
-                    connectionCode: null,
-                    codeExpiresAt: null
+                    connectionCode: undefined,
+                    codeExpiresAt: undefined
                 });
             }
 

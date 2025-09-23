@@ -9,7 +9,7 @@ export class StakingAnalyticsController {
   }
 
   // 스테이킹 요약 통계
-  async getStakingSummary(req: Request, res: Response) {
+  async getStakingSummary(_req: Request, res: Response) {
     try {
       const summary = await this.stakingAnalyticsService.getStakingSummary();
       
@@ -29,7 +29,7 @@ export class StakingAnalyticsController {
   }
 
   // 컬렉션별 스테이킹 통계
-  async getCollectionStakingStats(req: Request, res: Response) {
+  async getCollectionStakingStats(_req: Request, res: Response) {
     try {
       const stats = await this.stakingAnalyticsService.getCollectionStakingStats();
       
@@ -134,7 +134,7 @@ export class StakingAnalyticsController {
   }
 
   // 스테이커 상세 정보 조회
-  async getStakerDetails(req: Request, res: Response) {
+  async getStakerDetails(req: Request, res: Response): Promise<any> {
     try {
       const { address } = req.params;
       

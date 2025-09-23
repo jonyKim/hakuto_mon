@@ -1,4 +1,4 @@
-import { Repository, Between, In } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { AppDataSource } from '../database';
 import { Event } from '../../domain/entities/event.entity';
 
@@ -76,7 +76,7 @@ export class EventRepository {
         });
     }
 
-    async findEventsByType(type: string): Promise<Event[]> {
+    async findEventsByType(type: 'project_announcement' | 'partnership' | 'token_listing' | 'staking_event' | 'nft_drop' | 'airdrop'): Promise<Event[]> {
         return await this.repository.find({
             where: { type },
             order: { createdAt: 'DESC' }
@@ -148,13 +148,13 @@ export class EventRepository {
         });
     }
 
-    async countByType(type: string): Promise<number> {
+    async countByType(type: 'project_announcement' | 'partnership' | 'token_listing' | 'staking_event' | 'nft_drop' | 'airdrop'): Promise<number> {
         return await this.repository.count({
             where: { type }
         });
     }
 
-    async countByScope(scope: string): Promise<number> {
+    async countByScope(scope: 'all_projects' | 'hakuto_token' | 'ecosystem' | 'defi' | 'nft'): Promise<number> {
         return await this.repository.count({
             where: { scope }
         });
