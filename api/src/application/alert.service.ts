@@ -7,7 +7,7 @@ import { WalletUserRepository } from '../infrastructure/repositories/wallet_user
 import { NotificationService } from './notification.service';
 import { TelegramService } from './telegram.service';
 import { AlertRule, AlertCondition, AlertChannel } from '../domain/entities/alert_rule.entity';
-import { NotificationHistory } from '../domain/entities/notification_history.entity';
+// import { NotificationHistory } from '../domain/entities/notification_history.entity';
 
 export interface CreateAlertRequest {
     userId: string;

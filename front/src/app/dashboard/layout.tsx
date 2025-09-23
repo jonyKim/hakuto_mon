@@ -57,7 +57,7 @@ export default function DashboardLayout({
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div>로딩 중...</div>
+        <div>Loading...</div>
       </div>
     )
   }

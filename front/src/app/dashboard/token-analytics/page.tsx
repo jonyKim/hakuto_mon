@@ -609,8 +609,8 @@ export default function TokenAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {recentTransactions.slice(0, 20).map((tx) => (
-                  <div key={tx.transactionHash} className="flex items-center justify-between p-3 border rounded-lg">
+                {recentTransactions.slice(0, 20).map((tx, index) => (
+                  <div key={`${tx.transactionHash}-${index}`} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Badge variant="outline">
                         {tx.tokenVersion.toUpperCase()}

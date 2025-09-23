@@ -99,12 +99,32 @@ import { NFTAnalyticsController } from './interfaces/nft_analytics.controller';
 import { createNFTAnalyticsRouter } from './interfaces/nft_analytics.routes';
 
 // Token Analytics imports
-import { TokenAnalyticsService } from './application/token_analytics.service';
-import { TokenAnalyticsController } from './interfaces/token_analytics.controller';
+// import { TokenAnalyticsService } from './application/token_analytics.service';
+// import { TokenAnalyticsController } from './interfaces/token_analytics.controller';
 import { createTokenAnalyticsRouter } from './interfaces/token_analytics.routes';
 
+// Swap Analytics imports
+// import { SwapAnalyticsService } from './application/swap_analytics.service';
+// import { SwapAnalyticsController } from './interfaces/swap_analytics.controller';
+import { createSwapAnalyticsRouter } from './interfaces/swap_analytics.routes';
+
+// Staking Analytics imports
+// import { StakingAnalyticsService } from './application/staking_analytics.service';
+// import { StakingAnalyticsController } from './interfaces/staking_analytics.controller';
+import { createStakingAnalyticsRouter } from './interfaces/staking_analytics.routes';
+
+// Staking Rewards imports
+// import { StakingRewardsService } from './application/staking_rewards.service';
+// import { StakingRewardsController } from './interfaces/staking_rewards.controller';
+import { createStakingRewardsRouter } from './interfaces/staking_rewards.routes';
+
+// Mining Rewards imports
+// import { MiningRewardsService } from './application/mining_rewards.service';
+// import { MiningRewardsController } from './interfaces/mining_rewards.controller';
+import { createMiningRewardsRouter } from './interfaces/mining_rewards.routes';
+
 // Token Monitoring imports
-import { TokenMonitoringScheduler } from './infrastructure/schedulers/token_monitoring.scheduler';
+// import { TokenMonitoringScheduler } from './infrastructure/schedulers/token_monitoring.scheduler';
 
 dotenv.config();
 
@@ -310,6 +330,18 @@ app.use('/api/nft-analytics', createNFTAnalyticsRouter(nftAnalyticsController));
 
 // Token Analytics API routes
 app.use('/api/token-analytics', createTokenAnalyticsRouter());
+
+// Swap Analytics API routes
+app.use('/api/swap-analytics', createSwapAnalyticsRouter());
+
+// Staking Analytics API routes
+app.use('/api/staking-analytics', createStakingAnalyticsRouter());
+
+// Staking Rewards API routes
+app.use('/api/staking-rewards', createStakingRewardsRouter());
+
+// Mining Rewards API routes
+app.use('/api/mining-rewards', createMiningRewardsRouter());
 
 // Scheduler management endpoints (Admin only)
 app.get('/api/admin/scheduler/status', (_req, res) => {

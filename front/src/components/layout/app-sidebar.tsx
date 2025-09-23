@@ -64,6 +64,26 @@ const menuItems: MenuItem[] = [
     icon: BarChart3,
   },
   {
+    title: "Swap Analytics",
+    href: "/dashboard/swap-analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Staking Analytics",
+    href: "/dashboard/staking-analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Withdrawal Analytics",
+    href: "/dashboard/withdrawal-analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Mining Analytics",
+    href: "/dashboard/mining-analytics",
+    icon: BarChart3,
+  },
+  {
     title: "Analytics & Reports",
     icon: BarChart3,
     items: [
